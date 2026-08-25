@@ -1,0 +1,1433 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="One-hour enduring TD learning module with timed assessments and completion tracking.">
+  <title>TD Enduring Learning Module</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,500,1,0" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #102a43;
+      --navy-2: #173f5f;
+      --teal: #0b766e;
+      --teal-dark: #075e58;
+      --teal-soft: #eaf7f5;
+      --gold: #d7a83b;
+      --ink: #24313b;
+      --muted: #667783;
+      --line: #dce3e8;
+      --soft: #f5f8fa;
+      --success: #16734c;
+      --danger: #a83b3b;
+      --white: #fff;
+      color-scheme: light;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; color: var(--ink); background: #fff; }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { cursor: not-allowed; opacity: .52; }
+    a { color: var(--teal-dark); }
+    .topbar {
+      position: sticky; top: 0; z-index: 30; height: 64px; display: flex; align-items: center;
+      justify-content: space-between; gap: 24px; padding: 0 28px; border-bottom: 1px solid var(--line); background: #fff;
+    }
+    .brand { display: flex; align-items: center; gap: 11px; }
+    .brand-mark { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 4px; background: var(--teal); color: #fff; font-size: 11px; font-weight: 850; }
+    .brand-copy { display: grid; gap: 1px; }
+    .brand-copy strong { color: var(--navy); font-size: 13px; }
+    .brand-copy small { color: var(--muted); font-size: 9px; letter-spacing: .05em; text-transform: uppercase; }
+    .top-meta { display: flex; align-items: center; gap: 12px; }
+    .saved { color: var(--success); font-size: 10px; font-weight: 750; }
+    .credit { padding: 6px 10px; border-radius: 999px; background: var(--teal-soft); color: var(--teal-dark); font-size: 10px; font-weight: 800; }
+    .course-banner { min-height: 90px; display: grid; grid-template-columns: minmax(0, 1fr) 190px; align-items: center; gap: 40px; padding: 18px 32px; background: var(--navy); color: #fff; }
+    .course-banner-copy { display: grid; gap: 6px; min-width: 0; }
+    .course-banner-copy span { color: #b8c9d9; font-size: 10px; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }
+    .course-banner-copy strong { overflow: hidden; font-size: 15px; line-height: 1.35; white-space: nowrap; text-overflow: ellipsis; }
+    .banner-progress { display: grid; gap: 7px; }
+    .banner-progress > span { color: #e7eef4; font-size: 11px; font-weight: 700; text-align: right; }
+    .progress-track { height: 6px; overflow: hidden; border-radius: 999px; background: rgba(255,255,255,.2); }
+    .progress-track > span { display: block; width: 0; height: 100%; border-radius: inherit; background: #63d6c9; transition: width .25s ease; }
+    .layout { display: grid; grid-template-columns: 320px minmax(0, 1fr); min-height: calc(100vh - 154px); }
+    .sidebar { position: sticky; top: 64px; align-self: start; height: calc(100vh - 64px); overflow-y: auto; border-right: 1px solid var(--line); background: #fff; }
+    .sidebar-head { display: grid; gap: 3px; padding: 22px 22px 18px; border-bottom: 1px solid var(--line); }
+    .sidebar-head strong { font-size: 16px; }
+    .sidebar-head span { color: var(--muted); font-size: 11px; }
+    .unit { border-bottom: 1px solid var(--line); }
+    .unit-heading { display: grid; gap: 3px; padding: 16px 20px 8px; }
+    .unit-heading span { color: var(--muted); font-size: 10px; font-weight: 750; letter-spacing: .05em; text-transform: uppercase; }
+    .unit-heading strong { color: #2f3337; font-size: 13px; }
+    .step-button { width: 100%; min-height: 58px; display: flex; align-items: center; gap: 10px; padding: 10px 18px 10px 20px; border: 0; border-left: 4px solid transparent; background: transparent; color: var(--ink); text-align: left; }
+    .step-button:hover:not(:disabled) { background: #f5f7f8; }
+    .step-button.active { border-left-color: var(--teal); background: #eef7f6; color: var(--navy); }
+    .lesson-icon { flex: 0 0 auto; width: 26px; height: 26px; display: grid; place-items: center; border: 1px solid #b9c2ca; border-radius: 3px; background: #fff; color: #4e5860; font-size: 10px; font-weight: 800; }
+    .step-button.done .lesson-icon { border-color: #24845c; background: #ecf8f2; color: #18714b; }
+    .step-copy { display: grid; gap: 3px; }
+    .step-copy strong { font-size: 12px; }
+    .step-copy small { color: #69717a; font-size: 9px; }
+    .availability { display: grid; gap: 5px; margin: 18px 20px; padding: 14px; border: 1px solid #d7e2e8; border-radius: 4px; background: var(--soft); }
+    .availability span { color: #536979; font-size: 9px; text-transform: uppercase; }
+    .availability strong { font-size: 11px; }
+    .availability small { color: var(--muted); font-size: 9px; }
+    .content { min-width: 0; padding: 44px clamp(24px, 5vw, 76px) 32px; }
+    .page { width: min(1080px, 100%); margin: 0 auto; animation: enter .25s ease both; }
+    @keyframes enter { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+    .eyebrow { margin-bottom: 10px; color: var(--teal); font-size: 10px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
+    h1 { max-width: 940px; margin: 0; color: #202b35; font-size: clamp(30px, 3.2vw, 42px); font-weight: 680; line-height: 1.15; letter-spacing: -.025em; }
+    h2 { color: #202b35; }
+    .lede { max-width: 900px; margin: 18px 0 30px; color: #4f5962; font-size: 16px; line-height: 1.65; }
+    .lede.compact { max-width: 820px; margin-bottom: 24px; font-size: 14px; }
+    .home-grid { display: grid; grid-template-columns: minmax(0, 1fr) 300px; align-items: start; gap: 34px; }
+    .card { padding: 28px; border: 1px solid var(--line); border-radius: 5px; background: #fff; }
+    .welcome { border-top: 5px solid var(--teal); }
+    .kicker { display: block; margin-bottom: 9px; color: var(--teal-dark); font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+    .card h2 { margin: 0 0 12px; font-size: 20px; }
+    .card p { margin: 0 0 20px; color: #59636c; font-size: 13px; line-height: 1.65; }
+    .primary, .secondary, .text-button { min-height: 44px; border-radius: 4px; font-weight: 750; }
+    .primary { display: inline-flex; align-items: center; justify-content: center; gap: 12px; padding: 0 20px; border: 1px solid var(--teal); background: var(--teal); color: #fff; }
+    .primary:hover:not(:disabled) { background: var(--teal-dark); }
+    .secondary { padding: 0 18px; border: 1px solid #abb7c0; background: #fff; color: var(--navy); }
+    .secondary:hover { background: var(--soft); }
+    .text-button { padding: 0 8px; border: 0; background: transparent; color: var(--teal-dark); }
+    .about { padding: 30px 0; border-bottom: 1px solid var(--line); }
+    .about h2 { margin: 0 0 14px; font-size: 20px; }
+    .check-list { display: grid; gap: 13px; margin: 0; padding: 0; list-style: none; }
+    .check-list li { position: relative; padding-left: 26px; font-size: 13px; line-height: 1.55; }
+    .check-list li::before { content: "✓"; position: absolute; left: 0; top: 0; color: var(--teal); font-weight: 900; }
+    .faculty-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .faculty { display: flex; align-items: flex-start; gap: 14px; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: #f8fafc; }
+    .initials { flex: 0 0 auto; width: 52px; height: 52px; display: grid; place-items: center; border-radius: 50%; background: var(--navy); color: #fff; font-size: 14px; font-weight: 800; }
+    .faculty div:last-child { display: grid; gap: 4px; }
+    .faculty strong { font-size: 13px; }
+    .faculty p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.55; }
+    .details { position: sticky; top: 90px; }
+    .details dl { margin: 0; }
+    .details dl > div { display: flex; justify-content: space-between; gap: 16px; padding: 11px 0; border-bottom: 1px solid #e7eaed; }
+    .details dt, .details dd { font-size: 11px; }
+    .details dt { color: var(--muted); }
+    .details dd { margin: 0; font-weight: 800; text-align: right; }
+    .breadcrumb { display: flex; gap: 8px; margin-bottom: 22px; color: #56616a; font-size: 12px; }
+    .video-grid { display: grid; grid-template-columns: minmax(0, 1fr) 330px; align-items: start; gap: 18px; }
+    .video-card { overflow: hidden; border: 1px solid #cfd5da; border-radius: 5px; background: #0d1c2a; }
+    .video-frame { aspect-ratio: 16 / 9; background: #07131e; }
+    mux-player { width: 100%; height: 100%; --media-object-fit: contain; }
+    .video-status { display: grid; grid-template-columns: 140px minmax(0, 1fr) auto; align-items: center; gap: 18px; padding: 15px 18px 17px; background: #fff; }
+    .video-status > div:first-child, .interaction-count { display: grid; gap: 2px; }
+    .video-status strong { color: var(--navy); font-size: 12px; }
+    .video-status small { color: var(--muted); font-size: 9px; }
+    .video-bar { height: 6px; overflow: hidden; border-radius: 99px; background: #e4e9ed; }
+    .video-bar span { display: block; width: 0; height: 100%; border-radius: inherit; background: var(--teal); }
+    .interaction-count { justify-items: end; }
+    .interaction-count strong { color: var(--teal-dark); }
+    .chapters { overflow: hidden; border: 1px solid var(--line); border-radius: 5px; background: #fff; }
+    .chapters-head { display: flex; justify-content: space-between; gap: 20px; padding: 16px; border-bottom: 1px solid var(--line); }
+    .chapters-head strong { font-size: 13px; }
+    .chapters-head span { color: var(--muted); font-size: 10px; }
+    .chapter { width: 100%; display: grid; grid-template-columns: 28px 1fr; align-items: start; gap: 10px; padding: 14px 15px; border: 0; border-bottom: 1px solid var(--line); background: #fff; text-align: left; }
+    .chapter:last-child { border-bottom: 0; }
+    .chapter:hover:not(:disabled), .chapter.active { background: #eef7f6; }
+    .chapter-number { width: 25px; height: 25px; display: grid; place-items: center; border-radius: 50%; background: #edf2f5; color: var(--navy); font-size: 10px; font-weight: 850; }
+    .chapter > span:last-child { display: grid; gap: 3px; }
+    .chapter strong { color: var(--ink); font-size: 11px; }
+    .chapter small { color: var(--muted); font-size: 9px; line-height: 1.45; }
+    .callout { display: flex; gap: 12px; margin-top: 20px; padding: 15px 17px; border: 1px solid #c9dbe2; border-radius: 4px; background: #f4f9fa; }
+    .callout > span { flex: 0 0 auto; width: 20px; height: 20px; display: grid; place-items: center; border: 1px solid #557184; border-radius: 50%; color: #3e5f75; font-size: 10px; font-weight: 800; }
+    .callout p { margin: 0; color: #52616b; font-size: 11px; line-height: 1.6; }
+    .actions { display: flex; align-items: center; gap: 12px; margin-top: 24px; }
+    .actions.split { justify-content: space-between; }
+    .assessment { display: grid; gap: 18px; }
+    .question { margin: 0; padding: 24px; border: 1px solid var(--line); border-radius: 5px; }
+    .question.correct { border-color: #77b89a; background: #f5fbf8; }
+    .question.incorrect { border-color: #d7a2a2; background: #fff8f8; }
+    .question legend { max-width: 900px; padding: 0 8px 0 0; color: #24313b; font-size: 14px; font-weight: 750; line-height: 1.55; }
+    .question legend span { display: inline-grid; width: 25px; height: 25px; place-items: center; margin-right: 10px; border-radius: 3px; background: #eef3f6; color: #2f475a; font-size: 10px; }
+    .options { display: grid; gap: 9px; margin-top: 16px; }
+    .option { display: grid; grid-template-columns: 18px 1fr; align-items: start; gap: 10px; padding: 13px 14px; border: 1px solid #dce3e8; border-radius: 4px; color: #3f4a53; font-size: 12px; line-height: 1.45; cursor: pointer; }
+    .option:hover, .option.selected { border-color: var(--teal); background: var(--teal-soft); }
+    .option.answer { border-color: #4d9a74; background: #edf9f3; }
+    .option input { margin-top: 2px; accent-color: var(--teal); }
+    .rationale { margin-top: 13px; padding: 12px 14px; border-left: 3px solid var(--teal); background: #f3f8f7; color: #4c5d66; font-size: 11px; line-height: 1.55; }
+    .message { padding: 14px 16px; border-radius: 4px; font-size: 12px; line-height: 1.5; }
+    .message.warning { border: 1px solid #e2c58d; background: #fffaf0; color: #79591c; }
+    .message.success { border: 1px solid #8fc3a8; background: #f2fbf6; color: #16653f; }
+    .evaluation { display: grid; gap: 20px; }
+    .form-group { display: grid; gap: 9px; padding: 20px; border: 1px solid var(--line); border-radius: 5px; }
+    .form-group > label, .form-group legend { color: #283740; font-size: 13px; font-weight: 750; }
+    .rating { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+    .rating label { display: grid; place-items: center; min-height: 60px; border: 1px solid var(--line); border-radius: 4px; cursor: pointer; }
+    .rating label:has(input:checked) { border-color: var(--teal); background: var(--teal-soft); }
+    .rating input { position: absolute; opacity: 0; }
+    .rating strong { color: var(--navy); font-size: 14px; }
+    select, textarea { width: 100%; padding: 11px 12px; border: 1px solid #bfcbd3; border-radius: 4px; background: #fff; color: var(--ink); }
+    textarea { resize: vertical; }
+    .attestation { display: flex; align-items: flex-start; gap: 11px; padding: 16px; border: 1px solid var(--line); border-radius: 4px; background: var(--soft); font-size: 12px; line-height: 1.5; }
+    .attestation input { margin-top: 2px; accent-color: var(--teal); }
+    .completion { text-align: center; }
+    .seal { width: 72px; height: 72px; display: grid; place-items: center; margin: 0 auto 18px; border-radius: 50%; background: var(--teal); color: #fff; font-size: 30px; font-weight: 900; }
+    .completion .lede { margin-left: auto; margin-right: auto; }
+    .summary { display: grid; grid-template-columns: 2fr repeat(3, 1fr); margin-top: 28px; overflow: hidden; border: 1px solid var(--line); border-radius: 5px; text-align: left; }
+    .summary > div { display: grid; gap: 6px; padding: 18px; border-right: 1px solid var(--line); }
+    .summary > div:last-child { border-right: 0; }
+    .summary span { color: var(--muted); font-size: 9px; text-transform: uppercase; }
+    .summary strong { font-size: 12px; line-height: 1.45; }
+    .footer { width: min(1080px, 100%); margin: 50px auto 0; padding-top: 22px; border-top: 1px solid var(--line); color: var(--muted); font-size: 9px; line-height: 1.6; }
+    .footer-links { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 8px; }
+    .modal { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 24px; overflow-y: auto; background: rgba(13,28,42,.84); backdrop-filter: blur(3px); }
+    .modal-card { width: min(620px, 100%); padding: 28px; border-radius: 6px; background: #fff; box-shadow: 0 24px 70px rgba(0,0,0,.28); }
+    .modal-card h2 { margin: 0 0 10px; font-size: 20px; }
+    .modal-card > p { margin: 0 0 18px; color: #3f4b54; font-size: 14px; font-weight: 650; line-height: 1.55; }
+    .modal-options { display: grid; gap: 9px; }
+    .modal-feedback { margin-top: 14px; padding: 12px 14px; border-left: 3px solid var(--teal); background: #f3f8f7; color: #4c5d66; font-size: 11px; line-height: 1.55; }
+    .modal-actions { display: flex; justify-content: flex-end; margin-top: 18px; }
+    .hidden { display: none !important; }
+
+    /* The earlier portal-wide restyle is retained for reference but intentionally disabled.
+       LMS-inspired styling is scoped to the Activity Overview page below. */
+    @media not all {
+    body { background: #f8fafc; color: #0f172a; }
+    .accreditation-bar {
+      position: sticky; top: 0; z-index: 50; min-height: 30px; display: flex; align-items: center;
+      justify-content: space-between; gap: 20px; padding: 6px 24px; background: #002147; color: #fff;
+      font-size: 9px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase;
+    }
+    .accreditation-bar span:last-child { display: inline-flex; align-items: center; gap: 7px; }
+    .verified-dot { width: 15px; height: 15px; display: inline-grid; place-items: center; border-radius: 50%; background: #2563eb; font-size: 9px; }
+    .topbar {
+      top: 30px; height: 80px; padding: 0 20px; border-bottom: 1px solid #e2e8f0;
+      background: rgba(255,255,255,.94); backdrop-filter: blur(12px);
+    }
+    .brand { min-width: 220px; }
+    .brand-mark { display: none; }
+    .brand-copy { gap: 2px; line-height: 1; }
+    .brand-copy strong { color: #0f172a; font-size: 23px; font-weight: 900; letter-spacing: -.035em; text-transform: uppercase; }
+    .brand-copy strong em { color: #2563eb; font-style: normal; }
+    .brand-copy small { color: #64748b; font-size: 9px; font-weight: 700; letter-spacing: .13em; }
+    .top-links { display: flex; align-items: center; justify-content: center; gap: 5px; }
+    .top-links button { padding: 10px 12px; border: 0; border-radius: 10px; background: transparent; color: #475569; font-size: 11px; font-weight: 700; }
+    .top-links button:hover, .top-links button.active { background: #eff6ff; color: #1d4ed8; }
+    .top-meta { gap: 18px; }
+    .mastery { display: grid; grid-template-columns: 150px auto; align-items: center; gap: 8px 10px; }
+    .mastery-label { grid-column: 1 / -1; color: #94a3b8; font-size: 8px; font-weight: 900; letter-spacing: .09em; text-align: right; text-transform: uppercase; }
+    .mastery-track { height: 8px; overflow: hidden; border: 1px solid #e2e8f0; border-radius: 999px; background: #f1f5f9; }
+    .mastery-track span { display: block; height: 100%; border-radius: inherit; background: #2563eb; transition: width .35s ease; }
+    #overall-label { color: #2563eb; font-size: 10px; font-weight: 900; }
+    .credit { padding: 7px 11px; border: 1px solid #bfdbfe; background: #eff6ff; color: #1e40af; }
+    .saved { display: none; }
+    .course-banner {
+      min-height: 96px; grid-template-columns: 1fr; padding: 20px 32px;
+      background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 62%, #3b82f6 100%);
+      box-shadow: inset 0 -1px rgba(255,255,255,.15);
+    }
+    .course-banner-copy { max-width: 1120px; width: 100%; margin: 0 auto; }
+    .course-banner-copy span { color: #bfdbfe; }
+    .course-banner-copy strong { font-size: 17px; font-weight: 800; }
+    .layout { grid-template-columns: 288px minmax(0,1fr); min-height: calc(100vh - 206px); }
+    .sidebar { top: 110px; height: calc(100vh - 110px); border-right-color: #e2e8f0; box-shadow: 5px 0 20px rgba(15,23,42,.025); }
+    .sidebar-head { padding: 22px 20px 16px; border-bottom-color: #f1f5f9; }
+    .sidebar-head strong { color: #0f172a; font-size: 15px; font-weight: 850; }
+    .sidebar-head span { color: #94a3b8; }
+    #course-nav { padding: 10px 0; }
+    .unit { border-bottom: 0; }
+    .unit-heading { padding: 14px 20px 7px; }
+    .unit-heading span { color: #94a3b8; font-size: 9px; letter-spacing: .13em; }
+    .unit-heading strong { color: #64748b; font-size: 11px; }
+    .step-button {
+      width: calc(100% - 24px); min-height: 54px; margin: 2px 12px; padding: 10px 12px; border: 1px solid transparent;
+      border-left: 1px solid transparent; border-radius: 12px; color: #475569;
+    }
+    .step-button:hover:not(:disabled) { background: #f8fafc; color: #1d4ed8; }
+    .step-button.active { border: 1px solid #dbeafe; background: #eff6ff; color: #1d4ed8; box-shadow: 0 2px 8px rgba(37,99,235,.07); }
+    .lesson-icon { border: 0; border-radius: 9px; background: #f1f5f9; color: #64748b; }
+    .step-button.active .lesson-icon { background: #dbeafe; color: #2563eb; }
+    .step-button.done .lesson-icon { border: 0; background: #dcfce7; color: #15803d; }
+    .step-copy strong { font-weight: 700; }
+    .availability { border-color: #dbeafe; border-radius: 14px; background: #eff6ff; }
+    .availability span, .availability strong { color: #1e3a8a; }
+    .availability small { color: #3b82f6; }
+    .content { padding: 38px clamp(24px,4vw,60px) 32px; background: #f8fafc; }
+    .page { width: min(1120px,100%); }
+    .eyebrow, .kicker { color: #2563eb; }
+    h1 { color: #0f172a; font-weight: 900; letter-spacing: -.035em; }
+    h2 { color: #1e293b; }
+    .lede { color: #64748b; }
+    .card { border-color: #e2e8f0; border-radius: 24px; box-shadow: 0 10px 30px rgba(15,23,42,.06); }
+    .welcome {
+      position: relative; overflow: hidden; min-height: 260px; display: flex; flex-direction: column; justify-content: flex-end;
+      border: 0; background:
+        radial-gradient(circle at 88% 15%, rgba(96,165,250,.35), transparent 30%),
+        radial-gradient(circle at 10% 0%, rgba(14,165,233,.22), transparent 32%),
+        linear-gradient(135deg, #0f172a 0%, #1e3a8a 58%, #2563eb 100%);
+    }
+    .welcome::after { content: "TD"; position: absolute; right: 30px; top: 5px; color: rgba(255,255,255,.07); font-size: 150px; font-weight: 900; line-height: 1; }
+    .welcome > * { position: relative; z-index: 1; }
+    .welcome .kicker { color: #bfdbfe; }
+    .welcome h2 { color: #fff; font-size: 28px; font-weight: 850; }
+    .welcome p { max-width: 650px; color: #dbeafe; font-size: 13px; }
+    .welcome .primary { align-self: flex-start; border-color: #fff; background: #fff; color: #1d4ed8; }
+    .welcome .primary:hover { background: #eff6ff; }
+    .about { border-bottom-color: #e2e8f0; }
+    .check-list li::before { color: #2563eb; }
+    .initials { background: #002147; }
+    .details { border-radius: 20px; box-shadow: 0 8px 24px rgba(15,23,42,.045); }
+    .primary { border-color: #2563eb; border-radius: 12px; background: #2563eb; box-shadow: 0 8px 18px rgba(37,99,235,.18); }
+    .primary:hover:not(:disabled) { background: #1d4ed8; }
+    .secondary { border-color: #cbd5e1; border-radius: 12px; color: #334155; }
+    .video-card, .chapters, .question, .form-group, .completion .summary { border-color: #e2e8f0; border-radius: 20px; box-shadow: 0 8px 24px rgba(15,23,42,.05); }
+    .chapters-head { background: #fff; }
+    .chapter:hover:not(:disabled), .chapter.active { background: #eff6ff; }
+    .chapter-number { background: #eff6ff; color: #2563eb; }
+    .video-bar span { background: #2563eb; }
+    .interaction-count strong { color: #2563eb; }
+    .callout { border-color: #bfdbfe; border-radius: 14px; background: #eff6ff; }
+    .callout > span { border-color: #3b82f6; color: #2563eb; }
+    .option:hover, .option.selected { border-color: #3b82f6; background: #eff6ff; }
+    .option input, .attestation input { accent-color: #2563eb; }
+    .rationale, .modal-feedback { border-left-color: #2563eb; background: #eff6ff; }
+    .rating label:has(input:checked) { border-color: #2563eb; background: #eff6ff; }
+    .seal { background: #2563eb; box-shadow: 0 14px 30px rgba(37,99,235,.25); }
+    .modal-card { border: 1px solid #e2e8f0; border-radius: 24px; }
+    .footer { border-top-color: #e2e8f0; }
+    .module-spotlight {
+      position: relative; overflow: hidden; display: grid; gap: 10px; margin-bottom: 24px; padding: 25px 28px;
+      border: 1px solid rgba(255,255,255,.35); border-radius: 24px; color: #fff;
+      box-shadow: 0 16px 34px rgba(15,23,42,.13);
+    }
+    .module-spotlight::after {
+      content: attr(data-module); position: absolute; right: 22px; top: -31px; color: rgba(255,255,255,.11);
+      font-size: 164px; font-weight: 900; line-height: 1;
+    }
+    .module-spotlight > * { position: relative; z-index: 1; }
+    .module-spotlight .breadcrumb { margin: 0 0 2px; color: rgba(255,255,255,.78); }
+    .module-spotlight .eyebrow { margin: 0; color: rgba(255,255,255,.78); }
+    .module-spotlight h1 { max-width: 790px; color: #fff; font-size: clamp(28px,3vw,40px); }
+    .module-spotlight .lede { max-width: 780px; margin: 0; color: rgba(255,255,255,.86); }
+    .module-blue { background: linear-gradient(135deg,#1d4ed8,#2563eb 62%,#38bdf8); }
+    .module-violet { background: linear-gradient(135deg,#6d28d9,#7c3aed 58%,#c084fc); }
+    .module-teal { background: linear-gradient(135deg,#0f766e,#0d9488 58%,#2dd4bf); }
+    .module-orange { background: linear-gradient(135deg,#c2410c,#ea580c 58%,#fb923c); }
+    .module-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px; }
+    .module-chip { padding: 7px 10px; border: 1px solid rgba(255,255,255,.27); border-radius: 999px; background: rgba(255,255,255,.14); color: #fff; font-size: 9px; font-weight: 800; letter-spacing: .03em; }
+    .roadmap-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+    .roadmap-card { position: relative; overflow: hidden; display: grid; grid-template-columns: 46px 1fr; gap: 12px; padding: 16px; border: 1px solid #e2e8f0; border-radius: 17px; background: #fff; }
+    .roadmap-card::after { content: "15 MIN"; position: absolute; right: 12px; top: 10px; color: #cbd5e1; font-size: 8px; font-weight: 900; letter-spacing: .08em; }
+    .roadmap-icon { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 14px; color: #fff; font-size: 17px; font-weight: 900; }
+    .roadmap-card:nth-child(1) .roadmap-icon { background: linear-gradient(135deg,#1d4ed8,#38bdf8); }
+    .roadmap-card:nth-child(2) .roadmap-icon { background: linear-gradient(135deg,#6d28d9,#c084fc); }
+    .roadmap-card:nth-child(3) .roadmap-icon { background: linear-gradient(135deg,#0f766e,#2dd4bf); }
+    .roadmap-card:nth-child(4) .roadmap-icon { background: linear-gradient(135deg,#c2410c,#fb923c); }
+    .roadmap-copy { display: grid; align-content: center; gap: 4px; padding-right: 35px; }
+    .roadmap-copy strong { color: #0f172a; font-size: 12px; line-height: 1.35; }
+    .roadmap-copy small { color: #64748b; font-size: 9px; line-height: 1.45; }
+    .module-celebration { width: min(680px,100%); overflow: hidden; padding: 0; }
+    .celebration-top { position: relative; overflow: hidden; padding: 28px; color: #fff; text-align: center; }
+    .celebration-top::before, .celebration-top::after { content: "✦"; position: absolute; color: rgba(255,255,255,.28); font-size: 50px; }
+    .celebration-top::before { left: 30px; top: 18px; transform: rotate(-15deg); }
+    .celebration-top::after { right: 30px; bottom: 12px; transform: rotate(17deg); }
+    .celebration-icon { width: 64px; height: 64px; display: grid; place-items: center; margin: 0 auto 12px; border: 2px solid rgba(255,255,255,.55); border-radius: 50%; background: rgba(255,255,255,.18); font-size: 29px; font-weight: 900; }
+    .celebration-top h2 { position: relative; margin: 0; color: #fff; font-size: 24px; }
+    .celebration-top p { position: relative; margin: 8px 0 0; color: rgba(255,255,255,.85); font-size: 12px; }
+    .celebration-body { padding: 24px 28px 28px; }
+    .celebration-body h3 { margin: 0 0 13px; color: #0f172a; font-size: 15px; }
+    .takeaway-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+    .takeaway-list li { display: grid; grid-template-columns: 25px 1fr; gap: 10px; align-items: start; color: #475569; font-size: 11px; line-height: 1.55; }
+    .takeaway-list li::before { content: "✓"; width: 23px; height: 23px; display: grid; place-items: center; border-radius: 8px; background: #dcfce7; color: #15803d; font-size: 10px; font-weight: 900; }
+    .celebration-body .modal-actions { justify-content: space-between; align-items: center; }
+    .celebration-body .modal-actions small { color: #94a3b8; font-size: 9px; }
+    @media (max-width: 1020px) {
+      .layout { grid-template-columns: 270px minmax(0,1fr); }
+      .home-grid, .video-grid { grid-template-columns: 1fr; }
+      .details { position: static; }
+      .top-links { display: none; }
+    }
+    @media (max-width: 760px) {
+      .topbar { height: 60px; padding: 0 14px; }
+      .accreditation-bar { min-height: 26px; padding: 5px 12px; font-size: 7px; }
+      .accreditation-bar span:first-child { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+      .topbar { top: 26px; }
+      .brand-copy strong { font-size: 18px; }
+      .brand-copy small { font-size: 7px; }
+      .mastery { grid-template-columns: 78px auto; }
+      .mastery-label { display: none; }
+      .credit { display: none; }
+      .course-banner { min-height: 82px; grid-template-columns: 1fr; gap: 10px; padding: 14px 16px; }
+      .course-banner-copy strong { font-size: 12px; }
+      .banner-progress { grid-template-columns: auto 120px; align-items: center; }
+      .banner-progress > span { text-align: left; }
+      .layout { display: block; min-height: 0; }
+      .sidebar { position: sticky; top: 86px; z-index: 20; width: 100%; height: auto; overflow-x: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      .sidebar-head, .unit-heading, .availability { display: none; }
+      #course-nav { display: flex; min-width: max-content; }
+      .unit { display: contents; }
+      .step-button { width: auto; min-width: 48px; min-height: 48px; justify-content: center; margin: 0; padding: 7px 10px; border: 0; border-bottom: 3px solid transparent; border-radius: 0; }
+      .step-button.active { border: 0; border-bottom: 3px solid #2563eb; }
+      .step-copy { display: none; }
+      .content { padding: 30px 16px 24px; }
+      h1 { font-size: clamp(27px,8vw,36px); }
+      .video-status { grid-template-columns: 1fr auto; }
+      .video-bar { grid-column: 1 / -1; grid-row: 2; }
+      .faculty-list { grid-template-columns: 1fr; }
+      .roadmap-grid { grid-template-columns: 1fr; }
+      .module-spotlight { padding: 22px 19px; border-radius: 20px; }
+      .module-spotlight::after { right: 8px; top: -15px; font-size: 112px; }
+      .summary { grid-template-columns: 1fr; }
+      .summary > div { border-right: 0; border-bottom: 1px solid var(--line); }
+      .summary > div:last-child { border-bottom: 0; }
+      .rating { grid-template-columns: repeat(5, minmax(48px,1fr)); overflow-x: auto; }
+      .actions.split { align-items: stretch; flex-direction: column-reverse; }
+      .actions.split button { width: 100%; }
+      .modal { align-items: start; padding: 14px; }
+      .modal-card { padding: 22px 16px; }
+      .module-celebration { padding: 0; }
+      .celebration-top { padding: 25px 18px; }
+      .celebration-body { padding: 22px 18px 24px; }
+      .celebration-body .modal-actions { align-items: stretch; flex-direction: column; }
+      .celebration-body .modal-actions .primary { width: 100%; }
+    }
+    }
+
+    /* LMS feel limited to the Activity Overview page */
+    .content:has(.overview-page) { background: #f8fafc; }
+    .overview-page { width: min(1120px, 100%); }
+    .overview-page .eyebrow, .overview-page .kicker { color: #2563eb; }
+    .overview-page > h1 { color: #0f172a; font-weight: 900; letter-spacing: -.035em; }
+    .overview-page > .lede { color: #64748b; }
+    .overview-page .card { border-color: #e2e8f0; border-radius: 24px; box-shadow: 0 10px 30px rgba(15,23,42,.06); }
+    .overview-page .welcome {
+      position: relative; overflow: hidden; min-height: 260px; display: flex; flex-direction: column; justify-content: flex-end;
+      border: 0; background:
+        radial-gradient(circle at 88% 15%, rgba(96,165,250,.35), transparent 30%),
+        radial-gradient(circle at 10% 0%, rgba(14,165,233,.22), transparent 32%),
+        linear-gradient(135deg, #0f172a 0%, #1e3a8a 58%, #2563eb 100%);
+    }
+    .overview-page .welcome::after { content: "TD"; position: absolute; right: 30px; top: 5px; color: rgba(255,255,255,.07); font-size: 150px; font-weight: 900; line-height: 1; }
+    .overview-page .welcome > * { position: relative; z-index: 1; }
+    .overview-page .welcome .kicker { color: #bfdbfe; }
+    .overview-page .welcome h2 { color: #fff; font-size: 28px; font-weight: 850; }
+    .overview-page .welcome p { max-width: 650px; color: #dbeafe; font-size: 13px; }
+    .overview-page .welcome .primary { align-self: flex-start; border-color: #fff; border-radius: 12px; background: #fff; color: #1d4ed8; box-shadow: none; }
+    .overview-page .welcome .primary:hover { background: #eff6ff; }
+    .overview-page .about { border-bottom-color: #e2e8f0; }
+    .overview-page .check-list li::before { color: #2563eb; }
+    .overview-page .initials { background: #002147; }
+    .overview-page .faculty { border-color: #e2e8f0; background: #fff; box-shadow: 0 8px 24px rgba(15,23,42,.04); }
+    .overview-page .details { border-radius: 20px; box-shadow: 0 8px 24px rgba(15,23,42,.045); }
+    .overview-page .roadmap-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+    .overview-page .roadmap-card { position: relative; overflow: hidden; display: grid; grid-template-columns: 46px 1fr; gap: 12px; padding: 16px; border: 1px solid #e2e8f0; border-radius: 17px; background: #fff; }
+    .overview-page .roadmap-card::after { content: "15 MIN"; position: absolute; right: 12px; top: 10px; color: #cbd5e1; font-size: 8px; font-weight: 900; letter-spacing: .08em; }
+    .overview-page .roadmap-icon { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 14px; color: #fff; font-size: 17px; font-weight: 900; }
+    .overview-page .roadmap-card:nth-child(1) .roadmap-icon { background: linear-gradient(135deg,#1d4ed8,#38bdf8); }
+    .overview-page .roadmap-card:nth-child(2) .roadmap-icon { background: linear-gradient(135deg,#6d28d9,#c084fc); }
+    .overview-page .roadmap-card:nth-child(3) .roadmap-icon { background: linear-gradient(135deg,#0f766e,#2dd4bf); }
+    .overview-page .roadmap-card:nth-child(4) .roadmap-icon { background: linear-gradient(135deg,#c2410c,#fb923c); }
+    .overview-page .roadmap-copy { display: grid; align-content: center; gap: 4px; padding-right: 35px; }
+    .overview-page .roadmap-copy strong { color: #0f172a; font-size: 12px; line-height: 1.35; }
+    .overview-page .roadmap-copy small { color: #64748b; font-size: 9px; line-height: 1.45; }
+
+    /* Preserve the original course palette on presentation and completion pages. */
+    .module-spotlight { margin-bottom: 24px; padding: 24px 26px; border: 1px solid var(--line); border-top: 5px solid var(--teal); border-radius: 5px; background: #fff; }
+    .module-spotlight .breadcrumb { margin: 0 0 14px; }
+    .module-spotlight .eyebrow { margin-bottom: 8px; }
+    .module-spotlight h1 { color: #202b35; }
+    .module-spotlight .lede { margin: 13px 0 0; color: #4f5962; }
+    .module-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+    .module-chip { padding: 7px 10px; border: 1px solid #bcded9; border-radius: 999px; background: var(--teal-soft); color: var(--teal-dark); font-size: 9px; font-weight: 800; }
+    .module-celebration { width: min(680px,100%); overflow: hidden; padding: 0; }
+    .celebration-top { padding: 28px; background: var(--navy); color: #fff; text-align: center; }
+    .celebration-icon { width: 64px; height: 64px; display: grid; place-items: center; margin: 0 auto 12px; border: 2px solid rgba(255,255,255,.55); border-radius: 50%; background: rgba(255,255,255,.14); font-size: 29px; font-weight: 900; }
+    .celebration-top h2 { margin: 0; color: #fff; font-size: 24px; }
+    .celebration-top p { margin: 8px 0 0; color: #d9e5ed; font-size: 12px; }
+    .celebration-body { padding: 24px 28px 28px; }
+    .celebration-body h3 { margin: 0 0 13px; font-size: 15px; }
+    .takeaway-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+    .takeaway-list li { display: grid; grid-template-columns: 25px 1fr; gap: 10px; align-items: start; color: #4f5962; font-size: 11px; line-height: 1.55; }
+    .takeaway-list li::before { content: "✓"; width: 23px; height: 23px; display: grid; place-items: center; border-radius: 4px; background: var(--teal-soft); color: var(--teal-dark); font-size: 10px; font-weight: 900; }
+    .celebration-body .modal-actions { justify-content: space-between; align-items: center; }
+    .celebration-body .modal-actions small { color: var(--muted); font-size: 9px; }
+
+    @media (max-width: 1020px) {
+      .layout { grid-template-columns: 270px minmax(0,1fr); }
+      .home-grid, .video-grid { grid-template-columns: 1fr; }
+      .details { position: static; }
+    }
+    @media (max-width: 760px) {
+      .topbar { top: 0; height: 60px; padding: 0 14px; }
+      .brand-copy small, .credit { display: none; }
+      .course-banner { min-height: 82px; grid-template-columns: 1fr; gap: 10px; padding: 14px 16px; }
+      .course-banner-copy strong { font-size: 12px; }
+      .banner-progress { grid-template-columns: auto 120px; align-items: center; }
+      .banner-progress > span { text-align: left; }
+      .layout { display: block; min-height: 0; }
+      .sidebar { position: sticky; top: 60px; z-index: 20; width: 100%; height: auto; overflow-x: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      .sidebar-head, .unit-heading, .availability { display: none; }
+      #course-nav { display: flex; min-width: max-content; }
+      .unit { display: contents; }
+      .step-button { width: auto; min-width: 48px; min-height: 48px; justify-content: center; margin: 0; padding: 7px 10px; border: 0; border-bottom: 3px solid transparent; border-radius: 0; }
+      .step-button.active { border: 0; border-bottom: 3px solid var(--teal); }
+      .step-copy { display: none; }
+      .content { padding: 30px 16px 24px; }
+      h1 { font-size: clamp(27px,8vw,36px); }
+      .video-status { grid-template-columns: 1fr auto; }
+      .video-bar { grid-column: 1 / -1; grid-row: 2; }
+      .faculty-list, .overview-page .roadmap-grid { grid-template-columns: 1fr; }
+      .module-spotlight { padding: 20px 18px; }
+      .summary { grid-template-columns: 1fr; }
+      .summary > div { border-right: 0; border-bottom: 1px solid var(--line); }
+      .summary > div:last-child { border-bottom: 0; }
+      .rating { grid-template-columns: repeat(5, minmax(48px,1fr)); overflow-x: auto; }
+      .actions.split { align-items: stretch; flex-direction: column-reverse; }
+      .actions.split button { width: 100%; }
+      .modal { align-items: start; padding: 14px; }
+      .modal-card { padding: 22px 16px; }
+      .module-celebration { padding: 0; }
+      .celebration-top { padding: 25px 18px; }
+      .celebration-body { padding: 22px 18px 24px; }
+      .celebration-body .modal-actions { align-items: stretch; flex-direction: column; }
+      .celebration-body .modal-actions .primary { width: 100%; }
+      .overview-page .welcome { min-height: 230px; padding: 22px; }
+      .overview-page .welcome::after { right: 14px; font-size: 105px; }
+    }
+
+    /* Unified activity shell inspired by the supplied Nutrition learning portal. */
+    :root {
+      --portal-green: #00B4D8;
+      --portal-green-dark: #0077B6;
+      --portal-blue: #38BDF8;
+      --portal-cyber: #00E5FF;
+      --portal-purple: #7B2CBF;
+      --portal-slate: #0A192F;
+      --portal-line: #e2e8f0;
+      --portal-shadow: 0 14px 34px rgba(15,23,42,.06);
+      --portal-shadow-strong: 0 24px 60px rgba(15,23,42,.13);
+    }
+    body {
+      min-height: 100vh; overflow: hidden; color: var(--portal-slate);
+      background:
+        radial-gradient(circle at top left, rgba(0,180,216,.12), transparent 28%),
+        radial-gradient(circle at top right, rgba(56,189,248,.13), transparent 32%),
+        linear-gradient(180deg, #f8fbff 0%, #f8fafc 42%, #f1f5f9 100%);
+    }
+    .material-symbols-outlined { font-size: 20px; line-height: 1; }
+    .app-shell { display: flex; width: 100%; height: 100vh; overflow: hidden; }
+    .workspace { min-width: 0; flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+    .topbar {
+      position: relative; top: auto; z-index: 40; flex: 0 0 auto; height: 72px; padding: 0 22px;
+      border-bottom: 1px solid rgba(226,232,240,.95); background: rgba(255,255,255,.84);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: 0 10px 35px rgba(15,23,42,.05);
+    }
+    .topbar-left { min-width: 0; display: flex; align-items: center; gap: 12px; }
+    .sidebar-toggle, .sidebar-close { display: none; place-items: center; width: 42px; height: 42px; padding: 0; border: 0; border-radius: 13px; background: transparent; color: #475569; }
+    .sidebar-toggle:hover, .sidebar-close:hover { background: #f1f5f9; color: #0f172a; }
+    .top-title { min-width: 0; display: grid; gap: 4px; line-height: 1; }
+    .top-title strong { color: #0f172a; font-size: 18px; font-weight: 900; letter-spacing: -.025em; white-space: nowrap; }
+    .top-title strong em { color: var(--portal-green); font-style: normal; }
+    .top-title small { overflow: hidden; color: #64748b; font-size: 9px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; text-overflow: ellipsis; white-space: nowrap; }
+    .brand-lockup { min-width: 0; display: flex; align-items: center; gap: 13px; }
+    .rwce-wordmark, .achieve-wordmark { display: grid; gap: 3px; line-height: 1; }
+    .rwce-wordmark strong, .achieve-wordmark strong { color: #0A192F; font-size: 17px; font-weight: 900; letter-spacing: -.035em; white-space: nowrap; }
+    .rwce-wordmark strong em, .achieve-wordmark strong em { color: #00B4D8; font-style: normal; }
+    .rwce-wordmark small { color: #64748b; font-size: 7px; font-weight: 750; letter-spacing: .075em; white-space: nowrap; }
+    .achieve-wordmark small { color: #64748b; font-size: 7px; font-weight: 750; letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; }
+    .lockup-divider { width: 1px; height: 34px; background: #cbd5e1; }
+    .top-meta { gap: 14px; }
+    .overview-shortcut { display: inline-flex; align-items: center; gap: 7px; min-height: 42px; padding: 0 14px; border: 1px solid #bae6fd; border-radius: 13px; background: #f0f9ff; color: #0369a1; font-size: 11px; font-weight: 800; }
+    .overview-shortcut:hover, .overview-shortcut.active { border-color: #7dd3fc; background: #e0f2fe; }
+    .saved { color: var(--portal-green); }
+    .credit { padding: 8px 11px; border: 1px solid #bfdbfe; background: #eff6ff; color: #1e40af; }
+    .top-progress { display: flex; align-items: center; gap: 9px; }
+    .top-progress > span { min-width: 31px; color: #475569; font-size: 10px; font-weight: 900; text-align: right; }
+    .top-progress .progress-track { width: 140px; height: 9px; border: 0; background: #e2e8f0; }
+    .top-progress .progress-track > span { background: linear-gradient(90deg, var(--portal-green), var(--portal-blue)); }
+    .sidebar {
+      position: relative; top: auto; z-index: 50; flex: 0 0 288px; width: 288px; height: 100vh; display: flex; flex-direction: column;
+      overflow: hidden; border-right: 1px solid rgba(226,232,240,.9); background: rgba(255,255,255,.96);
+      backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); box-shadow: none;
+    }
+    .sidebar-summary { flex: 0 0 auto; margin: 16px 16px 8px; padding: 17px; border-radius: 19px; color: #fff; background: linear-gradient(135deg, #0A192F 0%, #123C69 56%, #2563EB 100%); box-shadow: 0 18px 40px rgba(10,25,47,.18); }
+    .sidebar-kicker { color: #BAE6FD; font-size: 9px; font-weight: 900; letter-spacing: .22em; text-transform: uppercase; }
+    .sidebar-summary > strong { display: block; margin-top: 7px; font-size: 14px; }
+    .sidebar-summary p { margin: 8px 0 15px; color: #dbeafe; font-size: 10px; line-height: 1.55; }
+    .sidebar-progress-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 6px; color: #cbd5e1; font-size: 9px; font-weight: 800; }
+    .sidebar-progress-track { height: 8px; overflow: hidden; border-radius: 999px; background: rgba(255,255,255,.14); }
+    .sidebar-progress-track span { display: block; width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #00B4D8, #00E5FF); transition: width .35s ease; }
+    .sidebar-nav-label { flex: 0 0 auto; padding: 10px 21px 7px; color: #94a3b8; font-size: 9px; font-weight: 850; letter-spacing: .2em; text-transform: uppercase; }
+    #course-nav { min-height: 0; flex: 1; overflow-y: auto; padding: 5px 12px 14px; scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent; }
+    .unit { border-bottom: 0; }
+    .unit-heading { padding: 14px 8px 6px; }
+    .unit-heading span { color: #94a3b8; font-size: 8px; letter-spacing: .15em; }
+    .unit-heading strong { color: #64748b; font-size: 10px; }
+    .step-button { width: 100%; min-height: 57px; margin: 2px 0; padding: 10px 11px; border: 1px solid transparent; border-left: 1px solid transparent; border-radius: 16px; color: #475569; }
+    .step-button:hover:not(:disabled) { background: #f8fafc; color: #0f172a; }
+    .step-button.active { border: 1px solid #bae6fd; background: #f0f9ff; color: #0369a1; box-shadow: 0 8px 18px rgba(0,180,216,.08); }
+    .lesson-icon { width: 32px; height: 32px; border: 0; border-radius: 11px; background: #eff6ff; color: #0284c7; }
+    .step-button.active .lesson-icon { background: #dbeafe; color: #1d4ed8; }
+    .step-button.done .lesson-icon { border: 0; background: #dcfce7; color: #15803d; }
+    .step-copy strong { font-size: 11px; }
+    .step-copy small { color: #94a3b8; font-size: 8px; }
+    .availability { flex: 0 0 auto; margin: 10px 16px 16px; border-color: #dbeafe; border-radius: 16px; background: linear-gradient(135deg,#eff6ff,#f0f9ff); }
+    .availability span { color: #2563eb; }
+    .availability strong { color: #0f172a; }
+    #sidebar-overlay { display: none; position: fixed; inset: 0; z-index: 45; background: rgba(15,23,42,.52); backdrop-filter: blur(3px); }
+    .content { min-width: 0; flex: 1; overflow-y: auto; padding: 32px clamp(20px,4vw,52px); background: transparent; scroll-behavior: smooth; }
+    .content:has(.overview-page) { background: transparent; }
+    .page { width: min(1100px,100%); }
+    h1 { color: #0f172a; font-weight: 900; }
+    h2 { color: #0f172a; font-weight: 850; }
+    .lede { color: #64748b; }
+    .card, .video-card, .chapters, .question, .form-group, .summary {
+      border-color: rgba(226,232,240,.95); border-radius: 20px; background: rgba(255,255,255,.9); box-shadow: var(--portal-shadow);
+    }
+    .primary { border-color: var(--portal-green); border-radius: 14px; background: var(--portal-green); box-shadow: 0 12px 26px rgba(0,180,216,.22); }
+    .primary:hover:not(:disabled) { background: var(--portal-green-dark); }
+    .secondary { border-color: #cbd5e1; border-radius: 14px; color: #334155; }
+    .eyebrow, .kicker { color: var(--portal-green); }
+    .overview-page { width: min(1100px,100%); display: grid; gap: 22px; }
+    .overview-hero { position: relative; overflow: hidden; padding: clamp(26px,4vw,42px); border: 1px solid rgba(255,255,255,.12); border-radius: 32px; color: #fff; background: radial-gradient(circle at 15% 10%, rgba(0,229,255,.23), transparent 30%), radial-gradient(circle at 85% 20%, rgba(123,44,191,.25), transparent 36%), linear-gradient(135deg,#0A192F 0%,#0B4F7A 48%,#2563EB 83%,#7B2CBF 120%); box-shadow: var(--portal-shadow-strong); }
+    .overview-hero::before, .overview-hero::after { content: ""; position: absolute; border-radius: 50%; filter: blur(8px); opacity: .35; pointer-events: none; }
+    .overview-hero::before { width: 220px; height: 220px; right: -60px; top: -85px; background: radial-gradient(circle,#00E5FF,transparent 68%); }
+    .overview-hero::after { width: 190px; height: 190px; left: -55px; bottom: -95px; background: radial-gradient(circle,#60a5fa,transparent 68%); }
+    .overview-hero-inner { position: relative; z-index: 1; display: flex; align-items: flex-end; justify-content: space-between; gap: 28px; }
+    .overview-hero-copy { max-width: 760px; }
+    .hero-chip { display: inline-flex; align-items: center; padding: 8px 12px; border: 1px solid rgba(255,255,255,.2); border-radius: 999px; background: rgba(255,255,255,.13); color: #fff; font-size: 9px; font-weight: 850; letter-spacing: .12em; text-transform: uppercase; }
+    .overview-hero h1 { margin-top: 18px; color: #fff; font-size: clamp(32px,4.6vw,54px); font-weight: 900; line-height: 1.03; letter-spacing: -.045em; }
+    .overview-hero p { max-width: 720px; margin: 18px 0 0; color: #dbeafe; font-size: 15px; line-height: 1.65; }
+    .hero-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+    .hero-pills span { padding: 7px 10px; border: 1px solid rgba(255,255,255,.18); border-radius: 999px; background: rgba(255,255,255,.11); color: #e0f2fe; font-size: 9px; font-weight: 750; }
+    .overview-hero .primary { flex: 0 0 auto; min-height: 50px; border-color: #fff; background: #fff; color: var(--portal-green-dark); box-shadow: 0 16px 34px rgba(15,23,42,.22); }
+    .overview-hero .primary:hover { background: #f0f9ff; }
+    .overview-stats { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 14px; }
+    .overview-stat { position: relative; overflow: hidden; min-height: 146px; padding: 20px; border: 1px solid rgba(226,232,240,.95); border-radius: 21px; background: rgba(255,255,255,.9); box-shadow: var(--portal-shadow); }
+    .overview-stat::after { content: ""; position: absolute; width: 110px; height: 110px; right: -40px; bottom: -45px; border-radius: 50%; background: radial-gradient(circle,rgba(45,212,191,.16),transparent 68%); }
+    .stat-label { color: #64748b; font-size: 9px; font-weight: 850; letter-spacing: .15em; text-transform: uppercase; }
+    .stat-value { margin-top: 10px; color: #0f172a; font-size: 30px; font-weight: 900; letter-spacing: -.035em; }
+    .stat-copy { margin-top: 8px; color: #64748b; font-size: 10px; line-height: 1.5; }
+    .stat-progress { height: 9px; margin-top: 13px; overflow: hidden; border-radius: 999px; background: #e2e8f0; }
+    .stat-progress span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg,var(--portal-green),var(--portal-blue)); }
+    .overview-section { padding: 27px; border: 1px solid rgba(226,232,240,.95); border-radius: 22px; background: rgba(255,255,255,.9); box-shadow: var(--portal-shadow); }
+    .overview-section .eyebrow { margin-bottom: 7px; }
+    .overview-section h2 { margin: 0; font-size: 23px; }
+    .overview-page .roadmap-grid { margin-top: 20px; gap: 14px; }
+    .overview-page .roadmap-card { min-height: 140px; padding: 20px; border-color: rgba(226,232,240,.95); border-radius: 21px; box-shadow: 0 12px 28px rgba(15,23,42,.05); transition: transform .22s ease, box-shadow .22s ease; }
+    .overview-page .roadmap-card:hover { transform: translateY(-2px); border-color: #bae6fd; box-shadow: 0 20px 46px rgba(15,23,42,.1); }
+    .overview-page .roadmap-card::after { color: #94a3b8; }
+    .overview-page .roadmap-icon { border-radius: 16px; }
+    .overview-page .roadmap-card:nth-child(1) .roadmap-icon { background: linear-gradient(135deg,#00B4D8,#38BDF8); }
+    .overview-page .roadmap-card:nth-child(2) .roadmap-icon { background: linear-gradient(135deg,#2563EB,#00E5FF); }
+    .overview-page .roadmap-card:nth-child(3) .roadmap-icon { background: linear-gradient(135deg,#0A192F,#00B4D8); }
+    .overview-page .roadmap-card:nth-child(4) .roadmap-icon { background: linear-gradient(135deg,#7B2CBF,#38BDF8); }
+    .overview-page .roadmap-copy strong { font-size: 13px; }
+    .overview-page .roadmap-copy small { font-size: 9px; }
+    .program-description { margin: 12px 0 0; color: #64748b; font-size: 12px; line-height: 1.75; }
+    .program-highlights { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 13px; margin-top: 20px; }
+    .program-highlight { min-height: 150px; padding: 19px; border: 1px solid #dbeafe; border-radius: 19px; background: linear-gradient(180deg,#f8fbff,#fff); }
+    .program-highlight strong { display: block; margin-top: 13px; color: #0f172a; font-size: 13px; }
+    .program-highlight p { margin: 7px 0 0; color: #64748b; font-size: 10px; line-height: 1.55; }
+    .highlight-badge { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 14px; background: #e0f2fe; color: #0369a1; font-size: 10px; font-weight: 900; }
+    .program-highlight:nth-child(2) .highlight-badge { background: #dbeafe; color: #1d4ed8; }
+    .program-highlight:nth-child(3) .highlight-badge { background: #e0e7ff; color: #4f46e5; }
+    .program-highlight:nth-child(4) .highlight-badge { background: #f3e8ff; color: #7e22ce; }
+    .outcomes-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 13px; margin-top: 20px; }
+    .outcome-card { min-height: 150px; padding: 20px; border: 1px solid #bae6fd; border-radius: 19px; background: linear-gradient(180deg,#f0f9ff,#fff); }
+    .outcome-card:nth-child(2) { border-color: #dbeafe; background: linear-gradient(180deg,#eff6ff,#fff); }
+    .outcome-card:nth-child(3) { border-color: #e0e7ff; background: linear-gradient(180deg,#eef2ff,#fff); }
+    .outcome-card:nth-child(4) { border-color: #e9d5ff; background: linear-gradient(180deg,#faf5ff,#fff); }
+    .outcome-icon { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 14px; background: #e0f2fe; color: #0284c7; }
+    .outcome-card:nth-child(2) .outcome-icon { background: #dbeafe; color: #2563eb; }
+    .outcome-card:nth-child(3) .outcome-icon { background: #e0e7ff; color: #4f46e5; }
+    .outcome-card:nth-child(4) .outcome-icon { background: #f3e8ff; color: #7e22ce; }
+    .outcome-card h3 { margin: 13px 0 7px; color: #0f172a; font-size: 14px; }
+    .outcome-card p { margin: 0; color: #64748b; font-size: 10px; line-height: 1.55; }
+    .overview-meta-grid { display: grid; grid-template-columns: minmax(0,1.35fr) minmax(280px,.65fr); gap: 18px; }
+    .overview-page .faculty-list { margin-top: 18px; }
+    .overview-page .faculty { border-color: #e2e8f0; border-radius: 18px; background: #f8fafc; box-shadow: none; }
+    .overview-page .details { position: static; padding: 27px; border-radius: 22px; }
+    .overview-page .details h2 { margin-bottom: 13px; }
+    .information-grid { display: grid; grid-template-columns: minmax(0,.72fr) minmax(0,1.28fr); gap: 18px; }
+    .information-card { padding: 25px; border: 1px solid rgba(226,232,240,.95); border-radius: 20px; background: #fff; }
+    .information-card h3 { margin: 0 0 10px; color: #0f172a; font-size: 16px; }
+    .information-card p, .information-card li { color: #64748b; font-size: 10px; line-height: 1.65; }
+    .information-card p { margin: 8px 0 0; }
+    .information-card ul { margin: 12px 0 0; padding-left: 18px; }
+    .credit-heading { margin-top: 17px; padding-top: 15px; border-top: 1px solid #e2e8f0; color: #0f172a; font-size: 11px; font-weight: 850; text-transform: uppercase; letter-spacing: .08em; }
+    .support-banner { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 20px 23px; border: 1px solid #bfdbfe; border-radius: 20px; background: linear-gradient(135deg,#eff6ff,#f0f9ff); }
+    .support-banner strong { display: block; color: #0f172a; font-size: 12px; }
+    .support-banner span { display: block; margin-top: 5px; color: #475569; font-size: 10px; line-height: 1.5; }
+    .support-banner .material-symbols-outlined { flex: 0 0 auto; width: 46px; height: 46px; display: grid; place-items: center; border-radius: 15px; background: #dbeafe; color: #2563eb; }
+    .module-spotlight { position: relative; overflow: hidden; margin-bottom: 22px; padding: 28px; border: 1px solid rgba(255,255,255,.12); border-top: 1px solid rgba(255,255,255,.12); border-radius: 28px; color: #fff; background: radial-gradient(circle at 16% 14%,rgba(0,229,255,.22),transparent 28%), radial-gradient(circle at 84% 18%,rgba(123,44,191,.22),transparent 32%), linear-gradient(135deg,#0A192F,#0B4F7A 50%,#2563EB); box-shadow: var(--portal-shadow-strong); }
+    .module-spotlight::after { content: attr(data-module); position: absolute; right: 18px; top: -32px; color: rgba(255,255,255,.09); font-size: 155px; font-weight: 900; line-height: 1; }
+    .module-spotlight > * { position: relative; z-index: 1; }
+    .module-spotlight .breadcrumb, .module-spotlight .eyebrow { color: #BAE6FD; }
+    .module-spotlight h1 { color: #fff; }
+    .module-spotlight .lede { color: #dbeafe; }
+    .module-chip { border-color: rgba(255,255,255,.2); background: rgba(255,255,255,.12); color: #fff; }
+    .video-card { overflow: hidden; background: #0f172a; }
+    .chapters { overflow: hidden; }
+    .chapters-head { background: linear-gradient(180deg,#f8fafc,#fff); }
+    .chapter:hover:not(:disabled), .chapter.active { background: #f0f9ff; }
+    .chapter-number { background: #e0f2fe; color: #0284c7; }
+    .video-bar span { background: linear-gradient(90deg,var(--portal-green),var(--portal-blue)); }
+    .interaction-count strong { color: var(--portal-green); }
+    .callout { border-color: #bfdbfe; border-radius: 16px; background: linear-gradient(135deg,#eff6ff,#f0f9ff); }
+    .callout > span { border-color: var(--portal-green); color: var(--portal-green); }
+    .option { border-radius: 14px; }
+    .option:hover, .option.selected { border-color: #7dd3fc; background: #f0f9ff; }
+    .option input, .attestation input { accent-color: var(--portal-green); }
+    .rationale, .modal-feedback { border-left-color: var(--portal-green); background: #f0f9ff; }
+    .modal { background: rgba(15,23,42,.78); backdrop-filter: blur(8px); }
+    .modal-card { border: 1px solid #e2e8f0; border-radius: 24px; box-shadow: 0 28px 80px rgba(15,23,42,.3); }
+    .completion { padding: 36px; border: 1px solid rgba(226,232,240,.95); border-radius: 28px; background: rgba(255,255,255,.92); box-shadow: var(--portal-shadow); }
+    .seal { background: linear-gradient(135deg,#0A192F,var(--portal-green),var(--portal-blue)); box-shadow: 0 16px 34px rgba(0,180,216,.24); }
+    .footer { margin-top: 38px; border-top-color: #e2e8f0; }
+
+    @media (max-width: 1120px) {
+      .top-progress .progress-track { width: 100px; }
+      .overview-shortcut { display: none; }
+      .overview-meta-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 860px) {
+      .sidebar { position: fixed; inset: 0 auto 0 0; top: 0; width: 288px; height: 100vh; overflow: hidden; border-bottom: 0; transform: translateX(-102%); transition: transform .28s ease; }
+      body.sidebar-open .sidebar { transform: translateX(0); }
+      body.sidebar-open #sidebar-overlay { display: block; }
+      .sidebar-toggle, .sidebar-close { display: grid; }
+      .sidebar-close { position: absolute; top: 10px; right: 10px; z-index: 2; }
+      .sidebar-summary { margin-top: 64px; }
+      #course-nav { display: block; min-width: 0; overflow-y: auto; }
+      .unit { display: block; }
+      .unit-heading { display: grid; }
+      .availability { display: grid; }
+      .step-button { width: 100%; min-width: 0; min-height: 57px; justify-content: flex-start; margin: 2px 0; padding: 10px 11px; border: 1px solid transparent; border-radius: 16px; }
+      .step-button.active { border: 1px solid #bae6fd; }
+      .step-copy { display: grid; }
+      .topbar { height: 68px; padding: 0 14px; }
+      .saved, .credit { display: none; }
+      .content { padding: 24px 16px; }
+      .overview-hero-inner { align-items: flex-start; flex-direction: column; }
+      .overview-stats, .outcomes-grid, .program-highlights, .information-grid { grid-template-columns: 1fr; }
+      .overview-page .roadmap-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 560px) {
+      .top-title small { display: none; }
+      .top-title strong { font-size: 15px; }
+      .brand-lockup { gap: 8px; }
+      .rwce-wordmark strong, .achieve-wordmark strong { font-size: 13px; }
+      .rwce-wordmark small, .achieve-wordmark small { display: none; }
+      .lockup-divider { height: 25px; }
+      .top-progress .progress-track { width: 78px; }
+      .overview-hero { padding: 25px 20px; border-radius: 24px; }
+      .overview-hero h1 { font-size: 32px; }
+      .overview-hero .primary { width: 100%; }
+      .overview-section { padding: 21px 17px; }
+      .module-spotlight { padding: 23px 18px; border-radius: 22px; }
+      .module-spotlight::after { right: 5px; top: -13px; font-size: 104px; }
+      .completion { padding: 28px 18px; }
+    }
+
+    @media print {
+      body { overflow: visible; background: #fff; }
+      .topbar, .sidebar, #sidebar-overlay, .footer, .actions { display: none !important; }
+      .app-shell, .workspace { display: block; height: auto; overflow: visible; }
+      .content { overflow: visible; padding: 20px; }
+    }
+  </style>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@mux/mux-player@3.6.1/+esm"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="course-sidebar" aria-label="Course navigation">
+      <button type="button" class="sidebar-close" id="sidebar-close" aria-label="Close course navigation"><span class="material-symbols-outlined" aria-hidden="true">close</span></button>
+      <section class="sidebar-summary" aria-label="Activity progress">
+        <span class="sidebar-kicker">Psychiatry track</span>
+        <strong>Enduring TD Activity</strong>
+        <p>Four separate 15-minute faculty video steps with timed pre-assessment, topic checks, and post-test questions.</p>
+        <div class="sidebar-progress-row"><span>Progress</span><span id="sidebar-overall-label">0%</span></div>
+        <div class="sidebar-progress-track"><span id="sidebar-overall-bar"></span></div>
+      </section>
+      <div class="sidebar-nav-label">Step Navigation</div>
+      <nav id="course-nav"></nav>
+      <div class="availability"><span>Course availability</span><strong>December 1, 2026–December 1, 2027</strong><small>Progress is saved on this device.</small></div>
+    </aside>
+    <div id="sidebar-overlay" aria-hidden="true"></div>
+    <section class="workspace">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button type="button" class="sidebar-toggle" id="sidebar-open" aria-label="Open course navigation" aria-expanded="false"><span class="material-symbols-outlined" aria-hidden="true">menu</span></button>
+          <div class="brand-lockup" role="img" aria-label="Real World CE in collaboration with AchieveCE">
+            <span class="rwce-wordmark"><strong>REAL WORLD <em>CE</em></strong><small>Evidence-based. Expert-approved. Patient-centered.</small></span>
+            <span class="lockup-divider" aria-hidden="true"></span>
+            <span class="achieve-wordmark"><small>In collaboration with</small><strong>Achieve<em>CE</em></strong></span>
+          </div>
+        </div>
+        <div class="top-meta">
+          <button type="button" class="overview-shortcut" data-top-step="overview"><span class="material-symbols-outlined" aria-hidden="true">dashboard</span>Activity Overview</button>
+          <span class="saved">Progress saved</span>
+          <div class="top-progress"><span id="overall-label">0%</span><div class="progress-track"><span id="overall-bar"></span></div></div>
+          <span class="credit">1.0 CE</span>
+        </div>
+      </header>
+      <main class="content" id="main-content">
+        <div id="page-root"></div>
+        <footer class="footer"><p>Provided by Real World CE in collaboration with AchieveCE. Faculty disclosure and profession-specific accreditation information presented within the activity materials govern this enduring program.</p><div class="footer-links"><span>Content reviewed August 21, 2026</span><a href="https://psychiatryonline.org/doi/10.1176/appi.books.9780890424841.Schizophrenia02" target="_blank" rel="noreferrer">APA guideline</a><a href="https://www.accessdata.fda.gov/drugsatfda_docs/label/2024/208082s016s017lbl.pdf" target="_blank" rel="noreferrer">FDA prescribing information</a></div></footer>
+      </main>
+    </section>
+  </div>
+  <div id="modal-root"></div>
+
+  <script>
+  (() => {
+    "use strict";
+
+    const PLAYBACK_ID = "J8fND9UBIybXeC8h6GPldXCxiQ8hyhFiFJTbLVrW8Ig";
+    const STORAGE_KEY = "rwce-td-enduring-standalone-v4";
+    const COURSE_TITLE = "Reducing Nonadherence and Rehospitalization Through Effective Tardive Dyskinesia Treatment";
+
+    const pretestQuestions = [
+      { id: "screening", prompt: "Which tool is commonly used to document the location and severity of abnormal involuntary movements over time?", options: ["PHQ-9", "Abnormal Involuntary Movement Scale (AIMS)", "GAD-7", "Mini-Cog"], answer: 1, rationale: "The AIMS is a structured examination used to detect and follow abnormal involuntary movements. It supports—but does not replace—clinical judgment." },
+      { id: "treatment", prompt: "According to the APA schizophrenia guideline, which treatment class is recommended for moderate to severe or disabling tardive dyskinesia associated with antipsychotic therapy?", options: ["Benzodiazepines", "VMAT2 inhibitors", "Stimulants", "Anticholinergics for every patient"], answer: 1, rationale: "The APA guideline recommends treatment with a reversible VMAT2 inhibitor for moderate to severe or disabling tardive dyskinesia associated with antipsychotic therapy." },
+      { id: "decision", prompt: "A patient develops movements concerning for tardive dyskinesia but remains psychiatrically stable on an antipsychotic. What is the most appropriate next step?", options: ["Abruptly stop all psychiatric medication", "Ignore the movements unless the patient complains", "Assess the movements and functional impact, review medications, and use shared decision-making", "Wait until hospitalization is required"], answer: 2, rationale: "A structured assessment, medication review, evaluation of functional impact, and shared decision-making protect both movement-disorder and psychiatric outcomes." },
+      { id: "approved", prompt: "Which pair includes FDA-approved treatment options for tardive dyskinesia in adults?", options: ["Valbenazine and deutetrabenazine", "Levodopa and donepezil", "Lithium and sertraline", "Benztropine and memantine"], answer: 0, rationale: "Valbenazine and deutetrabenazine are VMAT2 inhibitors with FDA-approved indications that include tardive dyskinesia in adults." }
+    ];
+
+    const posttestQuestions = [
+      { id: "post-aims", prompt: "What is the appropriate role of the AIMS score in TD screening, monitoring, and coverage decisions?", options: ["Use the AIMS score as the sole basis for diagnosis and coverage", "Use AIMS for structured screening and monitoring, interpreted with clinical findings and functional impact", "Require a fixed minimum AIMS score before any patient can receive treatment", "Use AIMS only after a VMAT2 inhibitor has been started"], answer: 1, rationale: "AIMS supports structured screening and longitudinal monitoring, but clinical judgment, patient experience, and functional impact should also guide treatment and coverage decisions." },
+      { id: "post-vmat2", prompt: "What best reflects the evidence for FDA-approved VMAT2 inhibitors?", options: ["They are effective only when antipsychotic therapy is discontinued", "Valbenazine and deutetrabenazine have demonstrated efficacy and tolerability for TD without requiring antipsychotic discontinuation", "Only one VMAT2 inhibitor is FDA approved for TD", "Clinical trials consistently showed worsening psychiatric stability"], answer: 1, rationale: "The presentation reviews evidence supporting valbenazine and deutetrabenazine as effective, generally well-tolerated TD treatments that do not require routine discontinuation of antipsychotic therapy." },
+      { id: "post-cost", prompt: "What mainly drives higher total healthcare costs in patients with TD?", options: ["Routine movement screening", "Inpatient encounters and hospitalization", "Patient education", "Outpatient AIMS documentation"], answer: 1, rationale: "The presentation identifies greater inpatient utilization and hospitalization as major drivers of the higher total healthcare costs associated with TD." },
+      { id: "post-strategy", prompt: "Which strategy best improves both quality and cost outcomes in TD?", options: ["Delay screening until movements become severe", "Focus only on medication acquisition cost", "Combine routine screening, appropriate treatment access, coordinated monitoring, and patient-centered follow-up", "Require antipsychotic discontinuation before evaluating TD treatment"], answer: 2, rationale: "A coordinated strategy that identifies TD earlier, supports evidence-based treatment access, and monitors clinical and functional outcomes can improve care while reducing avoidable utilization." }
+    ];
+
+    const pretestTimes = [132, 166, 194, 226];
+    const pretestPrompts = pretestQuestions.map((question, index) => ({
+      kind: "pretest", id: `pretest-${index + 1}`, questionId: question.id, time: pretestTimes[index], title: `Pre-test question ${index + 1} of 4`, question: question.prompt, options: question.options
+    }));
+
+    const posttestTimes = [3409, 3472, 3495, 3534];
+    const posttestPrompts = posttestQuestions.map((question, index) => ({
+      kind: "posttest", id: `posttest-${index + 1}`, questionId: question.id, time: posttestTimes[index], title: `Post-test question ${index + 1} of 4`, question: question.prompt, options: question.options, answer: question.answer, rationale: question.rationale
+    }));
+
+    const topicPrompts = [
+      { kind: "checkpoint", id: "burden-check", time: 732, title: "Checkpoint 1 of 4 · Patient April", question: "Which pathway best explains how untreated TD can contribute to costly healthcare utilization?", options: ["TD improves adherence but increases office visits", "TD-related burden may contribute to antipsychotic nonadherence, relapse, and hospitalization", "TD affects movement but not psychiatric stability", "Only medication acquisition cost affects utilization"], answer: 1, rationale: "The presentation connects TD-related functional and psychosocial burden with antipsychotic nonadherence, psychiatric destabilization, emergency care, and hospitalization." },
+      { kind: "checkpoint", id: "assessment-check", time: 1560, title: "Checkpoint 2 of 4 · Assessment", question: "What is the most appropriate role of the AIMS in TD care?", options: ["It is the only information needed to approve treatment", "It establishes a mandatory minimum score for treatment", "It supports structured screening and monitoring alongside clinical and functional assessment", "It replaces discussion with the patient"], answer: 2, rationale: "AIMS supports consistent screening and monitoring, but treatment decisions should also consider clinical judgment, patient experience, and functional impact." },
+      { kind: "checkpoint", id: "treatment-check", time: 2340, title: "Checkpoint 3 of 4 · Treatment", question: "Which treatment class does the APA recommend for moderate to severe or disabling TD associated with antipsychotic therapy?", options: ["A reversible VMAT2 inhibitor", "A stimulant", "Chronic anticholinergic therapy for every patient", "A benzodiazepine as first-line therapy"], answer: 0, rationale: "The APA guideline recommends a reversible VMAT2 inhibitor for moderate to severe or disabling TD and notes it may also be considered in selected patients with mild TD." },
+      { kind: "checkpoint", id: "managed-care-check", time: 2940, title: "Checkpoint 4 of 4 · Managed care", question: "What primarily drives the higher total healthcare costs described for patients with TD?", options: ["Routine screening", "Inpatient encounters and hospitalization", "Outpatient movement assessments", "Patient education"], answer: 1, rationale: "The managed care section identifies increased inpatient encounters and hospitalization as major drivers of higher total healthcare costs." }
+    ];
+
+    const chapters = [
+      { id: "foundations", module: 2, start: 0, end: 900, title: "Recognizing TD and Its Real-World Burden", detail: "Foundations, patient experience, adherence, hospitalization, and early recognition", meta: "Segmented video · 15 min · 4 pre-test prompts", accent: "blue", icon: "◎", takeaways: ["Recognize how TD can affect function, quality of life, adherence, and psychiatric stability.", "Use routine observation and patient conversation to identify concerning movements earlier.", "Connect untreated TD burden with relapse risk and avoidable healthcare utilization."] },
+      { id: "assessment", module: 3, start: 900, end: 1800, title: "Risk Factors, AIMS, and Clinical Assessment", detail: "Risk recognition, differential diagnosis, structured screening, and functional impact", meta: "Segmented video · 15 min · checkpoint", accent: "violet", icon: "⌕", takeaways: ["Identify patient and treatment factors that increase the risk of developing TD.", "Use the AIMS as a structured screening and monitoring tool—not as a substitute for clinical judgment.", "Document both movement severity and the patient’s functional and psychosocial experience."] },
+      { id: "treatment-module", module: 4, start: 1800, end: 2700, title: "Evidence-Based Treatment and VMAT2 Inhibitors", detail: "Guideline recommendations, treatment selection, efficacy, and safety", meta: "Segmented video · 15 min · checkpoint", accent: "teal", icon: "✦", takeaways: ["Apply APA guidance when considering treatment for moderate, severe, or disabling TD.", "Distinguish evidence-based VMAT2 inhibitor therapy from options that may worsen or inadequately address TD.", "Balance movement improvement, tolerability, psychiatric stability, and individual patient goals."] },
+      { id: "application", module: 5, start: 2700, end: 3598, title: "Managed Care, DUR, and Applying the Evidence", detail: "Utilization, formulary design, prior authorization, monitoring, and the timed post-test", meta: "Segmented video · 15 min · checkpoint + 4 post-test questions", accent: "orange", icon: "◆", takeaways: ["Evaluate access criteria using clinical need, functional burden, evidence, and patient-centered goals.", "Coordinate screening, treatment access, monitoring, and follow-up to reduce avoidable utilization.", "Translate the faculty’s recommendations into a practical drug-utilization-review approach."] }
+    ];
+
+    const TOTAL_VIDEO_DURATION = chapters[chapters.length - 1].end;
+
+    const units = [
+      { title: "Step 1", subtitle: "Get started", items: [{ id: "overview", label: "Activity overview", meta: "Reading · 5 min", icon: "▤" }] },
+      ...chapters.map(chapter => ({ title: `Step ${chapter.module}`, subtitle: chapter.title, items: [{ id: chapter.id, label: chapter.title, meta: chapter.meta, icon: "▶" }] })),
+      { title: "Step 6", subtitle: "Demonstrate learning", items: [{ id: "posttest", label: "Post-test results", meta: "4 timed questions · 80% required", icon: "▣" }, { id: "evaluation", label: "Activity evaluation", meta: "Survey · 5 min", icon: "▤" }] },
+      { title: "Step 7", subtitle: "Earn your credit", items: [{ id: "complete", label: "Completion", meta: "Course completion", icon: "★" }] }
+    ];
+
+    const defaults = { pretestAnswers: {}, completedPretestQuestions: [], videoPercent: 0, videoPosition: 0, videoDuration: TOTAL_VIDEO_DURATION, segmentPositions: {}, completedCheckpoints: [], completedSegments: [], posttestAnswers: {}, completedPosttestQuestions: [], posttestPassed: false, posttestScore: 0, posttestAttempts: 0, evaluationComplete: false, complete: false };
+    let progress = loadProgress();
+    if (!progress.segmentPositions || typeof progress.segmentPositions !== "object") progress.segmentPositions = {};
+    let currentStep = progress.complete ? "complete" : "overview";
+    let postAnswers = { ...(progress.posttestAnswers || {}) };
+    let postSubmitted = Object.keys(postAnswers).length === posttestQuestions.length && progress.posttestAttempts > 0;
+    let postMessage = "";
+    let player = null;
+    let furthest = 0;
+    let lastSavedSecond = 0;
+    let activePrompt = null;
+    let promptChoice = null;
+    let promptChecked = false;
+    let promptOpen = false;
+    let moduleCompleteOpen = false;
+    let completionSent = false;
+
+    const pageRoot = document.getElementById("page-root");
+    const modalRoot = document.getElementById("modal-root");
+    const navRoot = document.getElementById("course-nav");
+    const contentRoot = document.getElementById("main-content");
+    const sidebarOpenButton = document.getElementById("sidebar-open");
+    const sidebarCloseButton = document.getElementById("sidebar-close");
+    const sidebarOverlay = document.getElementById("sidebar-overlay");
+    const topStepButtons = Array.from(document.querySelectorAll("[data-top-step]"));
+    topStepButtons.forEach(button => button.addEventListener("click", () => navigate(button.dataset.topStep === "video" ? nextAvailableVideoStep() : button.dataset.topStep)));
+    sidebarOpenButton.addEventListener("click", () => setSidebarOpen(true));
+    sidebarCloseButton.addEventListener("click", () => setSidebarOpen(false));
+    sidebarOverlay.addEventListener("click", () => setSidebarOpen(false));
+    document.addEventListener("keydown", event => { if (event.key === "Escape") setSidebarOpen(false); });
+
+    function setSidebarOpen(open) {
+      document.body.classList.toggle("sidebar-open", open);
+      sidebarOpenButton.setAttribute("aria-expanded", String(open));
+      sidebarOverlay.setAttribute("aria-hidden", String(!open));
+    }
+
+    function loadProgress() {
+      try { return { ...defaults, ...JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}") }; }
+      catch (_) { return { ...defaults }; }
+    }
+
+    function saveProgress() {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(progress)); } catch (_) {}
+      updateChrome();
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[char]));
+    }
+
+    function formatTime(seconds) {
+      if (!Number.isFinite(seconds) || seconds <= 0) return "00:00";
+      const minutes = Math.floor(seconds / 60);
+      return `${String(minutes).padStart(2, "0")}:${String(Math.floor(seconds % 60)).padStart(2, "0")}`;
+    }
+
+    function chapterDuration(chapter) { return Math.max(0, chapter.end - chapter.start); }
+    function savedSegmentPosition(chapter) {
+      if (progress.completedSegments.includes(chapter.id)) return chapterDuration(chapter);
+      const stored = Number(progress.segmentPositions?.[chapter.id] || 0);
+      if (stored > 0) return Math.min(chapterDuration(chapter), stored);
+      const legacy = Number(progress.videoPosition || 0);
+      return legacy >= chapter.start && legacy < chapter.end ? Math.min(chapterDuration(chapter), legacy - chapter.start) : 0;
+    }
+    function segmentPercent(chapter, position = savedSegmentPosition(chapter)) {
+      const duration = chapterDuration(chapter);
+      return duration ? Math.min(100, Math.max(0, (position / duration) * 100)) : 0;
+    }
+    function syncVideoSummary() {
+      const watched = chapters.reduce((total, chapter) => total + savedSegmentPosition(chapter), 0);
+      progress.videoDuration = TOTAL_VIDEO_DURATION;
+      progress.videoPercent = Math.min(100, (watched / TOTAL_VIDEO_DURATION) * 100);
+    }
+    function recordSegmentPosition(chapter, position) {
+      const bounded = Math.min(chapterDuration(chapter), Math.max(0, Number(position || 0)));
+      progress.segmentPositions = { ...progress.segmentPositions, [chapter.id]: Math.max(savedSegmentPosition(chapter), bounded) };
+      progress.videoPosition = chapter.start + bounded;
+      syncVideoSummary();
+    }
+
+    function pretestCount() { return pretestPrompts.filter(item => progress.completedPretestQuestions.includes(item.id)).length; }
+    function checkpointCount() { return topicPrompts.filter(item => progress.completedCheckpoints.includes(item.id)).length; }
+    function posttestCount() { return posttestPrompts.filter(item => progress.completedPosttestQuestions.includes(item.id)).length; }
+    function promptsFor(chapter) { return [...pretestPrompts, ...topicPrompts, ...posttestPrompts].filter(item => item.time >= chapter.start && item.time < chapter.end); }
+    function promptsCompleteFor(chapter) {
+      return promptsFor(chapter).every(item => item.kind === "pretest"
+        ? progress.completedPretestQuestions.includes(item.id)
+        : item.kind === "posttest"
+          ? progress.completedPosttestQuestions.includes(item.id)
+          : progress.completedCheckpoints.includes(item.id));
+    }
+    function completedPromptCountFor(chapter) {
+      return promptsFor(chapter).filter(item => item.kind === "pretest"
+        ? progress.completedPretestQuestions.includes(item.id)
+        : item.kind === "posttest"
+          ? progress.completedPosttestQuestions.includes(item.id)
+          : progress.completedCheckpoints.includes(item.id)).length;
+    }
+    function isVideoStep(step) { return chapters.some(chapter => chapter.id === step); }
+    function chapterFor(step = currentStep) { return chapters.find(chapter => chapter.id === step); }
+    function nextVideoStep(step) {
+      const index = chapters.findIndex(chapter => chapter.id === step);
+      return index >= 0 && index < chapters.length - 1 ? chapters[index + 1].id : null;
+    }
+    function previousVideoStep(step) {
+      const index = chapters.findIndex(chapter => chapter.id === step);
+      return index > 0 ? chapters[index - 1].id : "overview";
+    }
+    function nextAvailableVideoStep() {
+      return chapters.find(chapter => !progress.completedSegments.includes(chapter.id) && canOpen(chapter.id))?.id || chapters[chapters.length - 1].id;
+    }
+    function markSegmentComplete(step = currentStep) {
+      const chapter = chapterFor(step);
+      if (!chapter) return;
+      progress.completedSegments = [...new Set([...progress.completedSegments, step])];
+      progress.segmentPositions = { ...progress.segmentPositions, [chapter.id]: chapterDuration(chapter) };
+      progress.videoPosition = chapter.end;
+      syncVideoSummary();
+    }
+    function videoComplete() { return progress.completedSegments.length === chapters.length && pretestCount() === 4 && checkpointCount() === 4 && posttestCount() === 4; }
+    function canOpen(step) {
+      if (step === "overview" || step === "video") return true;
+      if (isVideoStep(step)) return true;
+      if (step === "posttest") return progress.posttestPassed || videoComplete();
+      if (step === "evaluation") return progress.posttestPassed;
+      return progress.evaluationComplete;
+    }
+    function stepComplete(step) {
+      if (step === "overview") return currentStep !== "overview" || progress.videoPosition > 0;
+      if (step === "video") return videoComplete();
+      if (isVideoStep(step)) return progress.completedSegments.includes(step);
+      if (step === "posttest") return progress.posttestPassed;
+      if (step === "evaluation") return progress.evaluationComplete;
+      return progress.complete;
+    }
+    function overallPercent() {
+      if (progress.complete) return 100;
+      const overviewDone = Number(currentStep !== "overview" || progress.videoPosition > 0);
+      const completed = overviewDone + progress.completedSegments.length + Number(progress.posttestPassed) + Number(progress.evaluationComplete);
+      return Math.round((completed / 7) * 100);
+    }
+
+    function updateChrome() {
+      const percent = overallPercent();
+      document.getElementById("overall-label").textContent = `${percent}%`;
+      document.getElementById("overall-bar").style.width = `${percent}%`;
+      document.getElementById("sidebar-overall-label").textContent = `${percent}%`;
+      document.getElementById("sidebar-overall-bar").style.width = `${percent}%`;
+      topStepButtons.forEach(button => {
+        const step = button.dataset.topStep;
+        const presentationButton = step === "video";
+        button.classList.toggle("active", presentationButton ? isVideoStep(currentStep) : currentStep === step);
+        button.disabled = presentationButton ? false : !canOpen(step);
+      });
+      renderNav();
+      const viewed = document.getElementById("viewed-label");
+      const videoBar = document.getElementById("video-bar-fill");
+      const timeLabel = document.getElementById("video-time-label");
+      const interactionLabel = document.getElementById("interaction-label");
+      const activeChapter = chapterFor();
+      const activePosition = activeChapter ? Math.min(chapterDuration(activeChapter), player ? Number(player.currentTime || 0) : savedSegmentPosition(activeChapter)) : 0;
+      const activePercent = activeChapter ? segmentPercent(activeChapter, activePosition) : 0;
+      if (viewed) viewed.textContent = `${Math.round(activePercent)}% of this step`;
+      if (videoBar) videoBar.style.width = `${activePercent}%`;
+      if (timeLabel && activeChapter) timeLabel.textContent = `${formatTime(activePosition)} of ${formatTime(chapterDuration(activeChapter))}`;
+      if (interactionLabel) interactionLabel.textContent = `${pretestCount()}/4 · ${checkpointCount()}/4 · ${posttestCount()}/4`;
+      const nextButton = document.getElementById("video-next");
+      if (nextButton) {
+        const chapter = chapterFor();
+        nextButton.disabled = Boolean(chapter && !nextVideoStep(chapter.id) && !stepComplete(currentStep));
+      }
+      updateChapters();
+    }
+
+    function renderNav() {
+      navRoot.innerHTML = units.map(unit => `<div class="unit"><div class="unit-heading"><span>${unit.title}</span><strong>${unit.subtitle}</strong></div>${unit.items.map(item => {
+        const unlocked = canOpen(item.id);
+        const done = stepComplete(item.id);
+        return `<button class="step-button ${currentStep === item.id ? "active" : ""} ${done ? "done" : ""}" data-step="${item.id}" ${unlocked ? "" : "disabled"} aria-current="${currentStep === item.id ? "step" : "false"}"><span class="lesson-icon">${done ? "✓" : unlocked ? item.icon : "⌑"}</span><span class="step-copy"><strong>${item.label}</strong><small>${unlocked ? item.meta : "Locked"}</small></span></button>`;
+      }).join("")}</div>`).join("");
+      navRoot.querySelectorAll("[data-step]").forEach(button => button.addEventListener("click", () => navigate(button.dataset.step)));
+    }
+
+    function navigate(step) {
+      if (step === "video") step = nextAvailableVideoStep();
+      if (!canOpen(step)) return;
+      if (player && !player.paused) player.pause();
+      currentStep = step;
+      postMessage = "";
+      render();
+      setSidebarOpen(false);
+      contentRoot.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function render() {
+      modalRoot.innerHTML = "";
+      promptOpen = false;
+      moduleCompleteOpen = false;
+      activePrompt = null;
+      if (currentStep === "overview") renderOverview();
+      else if (isVideoStep(currentStep)) renderVideo();
+      else if (currentStep === "posttest") renderPosttest();
+      else if (currentStep === "evaluation") renderEvaluation();
+      else renderComplete();
+      updateChrome();
+    }
+
+    function renderOverview() {
+      const percent = overallPercent();
+      const interactions = pretestCount() + checkpointCount() + posttestCount();
+      pageRoot.innerHTML = `<section class="page overview-page">
+        <header class="overview-hero">
+          <div class="overview-hero-inner">
+            <div class="overview-hero-copy">
+              <span class="hero-chip">Activity Overview</span>
+              <h1>${COURSE_TITLE}</h1>
+              <p>Interactive and AI-enhanced education amplifying authentic patient voices through collaboration with the National Organization for Tardive Dyskinesia. Build the clinical and economic perspective needed to support proper screening, diagnosis, and guideline-directed, evidence-based treatment.</p>
+              <div class="hero-pills"><span>Tardive Dyskinesia in Managed Care</span><span>4 segmented videos</span><span>12 timed interactions</span><span>1.00 CME/CE credit</span></div>
+            </div>
+            <button class="primary" id="start-course">${progress.videoPosition > 0 ? "Resume Learning" : "Begin Activity"}<span>→</span></button>
+          </div>
+        </header>
+        <div class="overview-stats">
+          <article class="overview-stat"><div class="stat-label">Overall Mastery</div><div class="stat-value">${percent}%</div><div class="stat-progress"><span style="width:${percent}%"></span></div></article>
+          <article class="overview-stat"><div class="stat-label">Timed Interactions</div><div class="stat-value">${interactions} / 12</div><div class="stat-copy">Four pre-assessment questions, four topic checks, and four graded post-test questions.</div></article>
+          <article class="overview-stat"><div class="stat-label">Learning Journey</div><div class="stat-value">7 Steps</div><div class="stat-copy">Four separate presentation video segments plus assessment, evaluation, and completion.</div></article>
+        </div>
+        <section class="overview-section">
+          <div class="eyebrow">About this activity</div><h2>Practical education built for managed care</h2>
+          <p class="program-description">Engage with authentic patient scenarios, current evidence, and expert faculty perspectives focused on improving TD care. This enduring activity is adapted from the live, interactive webinar originally presented on August 12, 2026 at 4:00 PM EDT.</p>
+          <div class="program-highlights">
+            <article class="program-highlight"><span class="highlight-badge">AI</span><strong>Authentic Patient Scenarios</strong><p>AI-enhanced patient scenarios based on authentic cases and patient voices.</p></article>
+            <article class="program-highlight"><span class="highlight-badge">P&amp;T</span><strong>P&amp;T Decision-Making</strong><p>Examine practical Pharmacy &amp; Therapeutics considerations in TD care.</p></article>
+            <article class="program-highlight"><span class="highlight-badge">EB</span><strong>Evidence-Based Decisions</strong><p>Explore treatment selection and formulary decision-making using current evidence.</p></article>
+            <article class="program-highlight"><span class="highlight-badge">MD</span><strong>Expert Faculty Perspectives</strong><p>Apply guidance from experienced clinical leaders in psychiatry and pharmacy.</p></article>
+          </div>
+        </section>
+        <section class="overview-section">
+          <div class="eyebrow">Presentation pathway</div><h2>Your 60-minute learning journey</h2>
+          <div class="roadmap-grid">${chapters.map(chapter => `<article class="roadmap-card"><span class="roadmap-icon" aria-hidden="true">${chapter.icon}</span><span class="roadmap-copy"><strong>Step ${chapter.module}: ${escapeHtml(chapter.title)}</strong><small>${formatTime(chapter.start)}–${formatTime(chapter.end)} · ${escapeHtml(chapter.detail)}</small></span></article>`).join("")}</div>
+        </section>
+        <section class="overview-section">
+          <div class="eyebrow">Learning objectives</div><h2>What participants will be able to do</h2>
+          <div class="outcomes-grid">
+            <article class="outcome-card"><span class="outcome-icon" aria-hidden="true">1</span><h3>Describe TD impact and monitoring</h3><p>Describe the physical, psychological, and socioeconomic impacts of TD symptoms along with the recommended monitoring guidelines for patients being treated with antipsychotics.</p></article>
+            <article class="outcome-card"><span class="outcome-icon" aria-hidden="true">2</span><h3>Use clinical assessment tools</h3><p>Describe the use of clinical tools for the assessment of TD across recommended patient populations.</p></article>
+            <article class="outcome-card"><span class="outcome-icon" aria-hidden="true">3</span><h3>Differentiate TD treatments</h3><p>Differentiate between guideline-recommended, FDA-approved first-line treatments and second-line options for TD based on the latest real-world evidence.</p></article>
+            <article class="outcome-card"><span class="outcome-icon" aria-hidden="true">4</span><h3>Construct population health strategies</h3><p>Construct population health management strategies that balance the economic impact of VMAT-2 inhibitors with long-term patient outcomes and reductions in total healthcare resource utilization.</p></article>
+          </div>
+        </section>
+        <div class="overview-meta-grid">
+          <section class="overview-section">
+            <div class="eyebrow">Faculty</div><h2>Meet your clinical educators</h2>
+            <div class="faculty-list"><div class="faculty"><span class="initials" aria-hidden="true">LC</span><div><strong>Leslie L. Citrome, MD, MPH</strong><p>Clinical Professor, Psychiatry &amp; Behavioral Sciences<br>New York Medical College—School of Medicine<br>Valhalla, New York</p></div></div><div class="faculty"><span class="initials" aria-hidden="true">MG</span><div><strong>Mark Garofoli, PharmD, MBA, BCGP, CPE, CTTS</strong><p>Clinical Associate Professor and Director of Experiential Learning<br>West Virginia University School of Pharmacy<br>Morgantown, West Virginia</p></div></div></div>
+          </section>
+          <aside class="card details"><div class="eyebrow">Activity details</div><h2>Course information</h2><dl><div><dt>Topic</dt><dd>Tardive Dyskinesia in Managed Care</dd></div><div><dt>Credit</dt><dd>1.00 CME/CE</dd></div><div><dt>Level</dt><dd>Application-based</dd></div><div><dt>Estimated time</dt><dd>60 minutes</dd></div><div><dt>Passing score</dt><dd>80%</dd></div><div><dt>Presentation steps</dt><dd>4 × 15 min</dd></div><div><dt>Format</dt><dd>Enduring · On demand</dd></div><div><dt>Originally presented</dt><dd>Aug 12, 2026 · 4:00 PM EDT</dd></div><div><dt>Availability</dt><dd>Dec 1, 2026–Dec 1, 2027</dd></div></dl></aside>
+        </div>
+        <section class="overview-section">
+          <div class="eyebrow">Participation information</div><h2>Audience, accreditation, and requirements</h2>
+          <div class="information-grid">
+            <article class="information-card">
+              <h3>Target Audience</h3>
+              <p>This educational activity is intended for managed care pharmacists, physicians, nurse practitioners, physician assistants, and other clinicians who manage TD.</p>
+              <div class="credit-heading">System Requirements</div>
+              <p>A computer or mobile device with audio, 4 GB RAM, a dual-core 2 GHz processor, and stable internet access (600 kbps minimum; 1.2 Mbps recommended). Use a current version of Chrome, Edge, Firefox, or Safari. The original live program also supported the current Zoom application.</p>
+              <div class="credit-heading">Privacy</div>
+              <p>Learner information is kept confidential and used only to administer the activity, award credit, and meet accreditation requirements.</p>
+            </article>
+            <article class="information-card">
+              <h3>Accreditation and Credit</h3>
+              <p>This activity was planned and implemented in accordance with the accreditation requirements and policies of the Accreditation Council for Continuing Medical Education (ACCME) through the joint providership of PeerPoint Medical Education Institute and Real World CE. PeerPoint Medical Education Institute is accredited by the ACCME to provide continuing medical education for physicians.</p>
+              <p>PeerPoint Medical Education Institute designated the original live format for a maximum of 1.00 AMA PRA Category 1 Credit™. Physicians should claim only the credit commensurate with the extent of their participation.</p>
+              <div class="credit-heading">ACPE Requirements for Credit</div>
+              <p>Learners must correctly enter the six-digit evaluation code provided in the activity materials or course page and complete the activity evaluation. See the introductory slides for information about other credits provided.</p>
+              <p><strong>Accreditation questions:</strong> <a href="mailto:support@achievece.com">support@achievece.com</a>. Credit for this enduring activity is governed by the enduring-program instructions and introductory materials.</p>
+            </article>
+          </div>
+        </section>
+        <div class="support-banner"><span class="material-symbols-outlined" aria-hidden="true">handshake</span><div><strong>Collaboration and Commercial Support</strong><span>Developed in collaboration with the National Organization for Tardive Dyskinesia. Supported by an educational grant from Teva Pharmaceutical Industries Ltd.</span></div></div>
+        <div class="callout"><span class="material-symbols-outlined" aria-hidden="true">schedule</span><p>Each presentation player contains only its assigned step and stops before the next one begins. Timed questions still appear as the faculty reads them: pre-assessment questions begin at 2:12, and the four graded post-test questions appear during the closing step.</p></div>
+      </section>`;
+      document.getElementById("start-course").addEventListener("click", () => navigate(nextAvailableVideoStep()));
+    }
+
+    function moduleCallout(chapter) {
+      if (chapter.id === "foundations") return "This player stops at the end of Step 2. Four ungraded pre-assessment questions appear at 2:12, 2:46, 3:14, and 3:46. The Patient April checkpoint follows at 12:12.";
+      if (chapter.id === "assessment") return "This player stops at the end of Step 3. A knowledge checkpoint appears at 26:00 in the complete presentation to reinforce structured TD assessment and the role of the AIMS.";
+      if (chapter.id === "treatment-module") return "This player stops at the end of Step 4. A knowledge checkpoint appears at 39:00 in the complete presentation to reinforce the treatment recommendations covered by the faculty.";
+      return "This player contains the final presentation step. A managed-care checkpoint appears at 49:00 in the complete presentation. The four graded post-test questions then appear at 56:49, 57:52, 58:15, and 58:54 as the speakers read them.";
+    }
+
+    function renderVideo() {
+      const chapter = chapterFor();
+      const nextStep = nextVideoStep(chapter.id);
+      const nextLabel = nextStep ? `Continue to Step ${chapterFor(nextStep).module}` : "View post-test results";
+      const segmentPosition = savedSegmentPosition(chapter);
+      const segmentProgress = segmentPercent(chapter, segmentPosition);
+      const segmentDuration = chapterDuration(chapter);
+      pageRoot.innerHTML = `<section class="page"><header class="module-spotlight module-${chapter.accent}" data-module="${chapter.module}"><div class="breadcrumb">Step ${chapter.module} <span>›</span> Faculty presentation</div><div class="eyebrow">15-minute presentation step</div><h1>${escapeHtml(chapter.title)}</h1><p class="lede compact">${escapeHtml(chapter.detail)}. Watch this step's video segment, answer each timed interaction, and finish with a fast takeaway recap.</p><div class="module-chips"><span class="module-chip">◷ ${formatTime(segmentDuration)} video segment</span><span class="module-chip">⇥ This player contains only Step ${chapter.module}</span><span class="module-chip">✦ ${completedPromptCountFor(chapter)}/${promptsFor(chapter).length} timed interactions completed</span><span class="module-chip">✓ Key takeaways</span></div></header><div class="video-grid"><div class="video-card"><div class="video-frame"><mux-player id="course-player" playback-id="${PLAYBACK_ID}" extra-source-params="asset_start_time=${chapter.start}&amp;asset_end_time=${chapter.end}" storyboard-src="https://image.mux.com/${PLAYBACK_ID}/storyboard.vtt?format=webp&amp;asset_start_time=${chapter.start}&amp;asset_end_time=${chapter.end}" thumbnail-time="${chapter.start}" metadata-video-title="${COURSE_TITLE} — ${escapeHtml(chapter.title)}" accent-color="#00B4D8" primary-color="#ffffff" secondary-color="#0A192F" default-stream-type="on-demand" playsinline preload="metadata" aria-label="${escapeHtml(chapter.title)}"></mux-player></div><div class="video-status"><div><strong id="viewed-label">${Math.round(segmentProgress)}% of this step</strong><small id="video-time-label">${formatTime(segmentPosition)} of ${formatTime(segmentDuration)}</small></div><div class="video-bar"><span id="video-bar-fill" style="width:${segmentProgress}%"></span></div><div class="interaction-count"><strong id="interaction-label">${pretestCount()}/4 · ${checkpointCount()}/4 · ${posttestCount()}/4</strong><small>pre · topic · post</small></div></div></div><aside class="chapters"><div class="chapters-head"><strong>4 separate video steps</strong><span id="chapter-time">${formatTime(segmentPosition)} / ${formatTime(segmentDuration)}</span></div><div id="chapter-list"></div></aside></div><div class="callout"><span aria-hidden="true">i</span><p>${escapeHtml(moduleCallout(chapter))}</p></div><div class="actions split"><button class="secondary" id="video-previous">← Previous step</button><button class="text-button" id="video-restart">↻ Restart this step &amp; questions</button><button class="primary" id="video-next" ${nextStep || stepComplete(chapter.id) ? "" : "disabled"}>${nextLabel} <span>→</span></button></div></section>`;
+      document.getElementById("video-previous").addEventListener("click", () => navigate(previousVideoStep(chapter.id)));
+      document.getElementById("video-restart").addEventListener("click", () => restartVideoStep(chapter));
+      document.getElementById("video-next").addEventListener("click", () => navigate(nextStep || "posttest"));
+      setupPlayer(chapter);
+      updateChapters();
+    }
+
+    function restartVideoStep(chapter) {
+      if (!window.confirm(`Restart Step ${chapter.module} from 00:00 and show its timed questions again?`)) return;
+      const chapterPrompts = promptsFor(chapter);
+      const pretestIds = new Set(chapterPrompts.filter(item => item.kind === "pretest").map(item => item.id));
+      const checkpointIds = new Set(chapterPrompts.filter(item => item.kind === "checkpoint").map(item => item.id));
+      const posttestIds = new Set(chapterPrompts.filter(item => item.kind === "posttest").map(item => item.id));
+      progress.completedPretestQuestions = progress.completedPretestQuestions.filter(id => !pretestIds.has(id));
+      progress.completedCheckpoints = progress.completedCheckpoints.filter(id => !checkpointIds.has(id));
+      progress.completedPosttestQuestions = progress.completedPosttestQuestions.filter(id => !posttestIds.has(id));
+      progress.completedSegments = progress.completedSegments.filter(id => id !== chapter.id);
+      const pretestAnswers = { ...progress.pretestAnswers };
+      const posttestAnswers = { ...progress.posttestAnswers };
+      chapterPrompts.forEach(item => {
+        if (item.kind === "pretest") delete pretestAnswers[item.questionId];
+        if (item.kind === "posttest") delete posttestAnswers[item.questionId];
+      });
+      progress.pretestAnswers = pretestAnswers;
+      progress.posttestAnswers = posttestAnswers;
+      const segmentPositions = { ...progress.segmentPositions };
+      delete segmentPositions[chapter.id];
+      progress.segmentPositions = segmentPositions;
+      progress.videoPosition = chapter.start;
+      if (posttestIds.size) {
+        progress.posttestPassed = false;
+        progress.posttestScore = 0;
+        progress.posttestAttempts = 0;
+        progress.complete = false;
+        postAnswers = { ...progress.posttestAnswers };
+        postSubmitted = false;
+        postMessage = "";
+        completionSent = false;
+      }
+      syncVideoSummary();
+      saveProgress();
+      if (player && !player.paused) player.pause();
+      renderVideo();
+      contentRoot.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    async function setupPlayer(chapter) {
+      try { await customElements.whenDefined("mux-player"); } catch (_) { return; }
+      player = document.getElementById("course-player");
+      if (!player) return;
+      const stepDuration = chapterDuration(chapter);
+      furthest = savedSegmentPosition(chapter);
+      lastSavedSecond = Math.floor(furthest);
+
+      const metadata = () => {
+        const returningToCompletedStep = progress.completedSegments.includes(chapter.id);
+        const resumeAt = returningToCompletedStep ? 0 : Math.min(stepDuration, savedSegmentPosition(chapter));
+        furthest = Math.max(furthest, resumeAt);
+        player.currentTime = Math.max(0, resumeAt > 2 ? resumeAt - 2 : resumeAt);
+        progress.videoDuration = TOTAL_VIDEO_DURATION;
+        saveProgress();
+      };
+
+      const completeCurrentStep = () => {
+        if (moduleCompleteOpen || promptOpen || !promptsCompleteFor(chapter)) return;
+        moduleCompleteOpen = true;
+        player.pause();
+        recordSegmentPosition(chapter, stepDuration);
+        markSegmentComplete(chapter.id);
+        saveProgress();
+        showModuleComplete(chapter);
+      };
+
+      const update = () => {
+        const local = Math.min(stepDuration, Math.max(0, Number(player.currentTime || 0)));
+        const absolute = chapter.start + local;
+        const chapterTime = document.getElementById("chapter-time");
+        if (chapterTime) chapterTime.textContent = `${formatTime(local)} / ${formatTime(stepDuration)}`;
+        if (local > furthest) furthest = local;
+        const inModule = item => item.time >= chapter.start && item.time <= chapter.end;
+        const duePretest = pretestPrompts.find(item => inModule(item) && absolute >= item.time && !progress.completedPretestQuestions.includes(item.id));
+        const dueTopic = topicPrompts.find(item => inModule(item) && absolute >= item.time && !progress.completedCheckpoints.includes(item.id));
+        const duePosttest = posttestPrompts.find(item => inModule(item) && absolute >= item.time && !progress.completedPosttestQuestions.includes(item.id));
+        const due = duePretest || dueTopic || duePosttest;
+        if (due && !promptOpen) {
+          promptOpen = true;
+          player.pause();
+          recordSegmentPosition(chapter, furthest);
+          saveProgress();
+          revealTimedPrompt(due);
+          return;
+        }
+        if (local >= stepDuration - 0.75) {
+          completeCurrentStep();
+          return;
+        }
+        if (Math.floor(local) === lastSavedSecond) { updateChapters(absolute); return; }
+        lastSavedSecond = Math.floor(local);
+        recordSegmentPosition(chapter, furthest);
+        saveProgress();
+        updateChapters(absolute);
+      };
+
+      player.addEventListener("loadedmetadata", metadata);
+      player.addEventListener("durationchange", metadata);
+      player.addEventListener("timeupdate", update);
+      player.addEventListener("playing", update);
+      player.addEventListener("seeked", update);
+      player.addEventListener("pause", update);
+      player.addEventListener("seeking", () => {
+        if (player.currentTime < 0) player.currentTime = 0;
+        if (player.currentTime > stepDuration) player.currentTime = Math.max(0, stepDuration - 1);
+        furthest = Math.max(furthest, Number(player.currentTime || 0));
+      });
+      player.addEventListener("ended", () => {
+        recordSegmentPosition(chapter, stepDuration);
+        saveProgress();
+        completeCurrentStep();
+      });
+    }
+
+    function showModuleComplete(chapter) {
+      const nextStep = nextVideoStep(chapter.id);
+      const destination = nextStep || "posttest";
+      const buttonLabel = nextStep ? `Start Step ${chapterFor(nextStep).module}` : "View post-test results";
+      modalRoot.innerHTML = `<div class="modal" role="dialog" aria-modal="true" aria-labelledby="module-complete-title"><section class="modal-card module-celebration"><div class="celebration-top module-${chapter.accent}"><span class="celebration-icon" aria-hidden="true">✓</span><h2 id="module-complete-title">Step ${chapter.module} complete!</h2><p>You finished another 15-minute presentation step.</p></div><div class="celebration-body"><h3>Your quick takeaway recap</h3><ul class="takeaway-list">${chapter.takeaways.map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul><div class="modal-actions"><small>Progress saved automatically</small><button class="primary" id="module-complete-next">${buttonLabel} <span>→</span></button></div></div></section></div>`;
+      document.getElementById("module-complete-next").addEventListener("click", () => {
+        moduleCompleteOpen = false;
+        navigate(destination);
+      });
+    }
+
+    function updateChapters(currentTime = player ? Number(player.currentTime || 0) : progress.videoPosition) {
+      const list = document.getElementById("chapter-list");
+      if (!list) return;
+      list.innerHTML = chapters.map(chapter => {
+        const unlocked = canOpen(chapter.id);
+        const done = stepComplete(chapter.id);
+        return `<button class="chapter ${currentStep === chapter.id ? "active" : ""}" data-module-step="${chapter.id}" ${unlocked ? "" : "disabled"}><span class="chapter-number">${done ? "✓" : chapter.module}</span><span><strong>${chapter.title}</strong><small>${formatTime(chapter.start)}–${formatTime(chapter.end)} · ${chapter.detail}</small></span></button>`;
+      }).join("");
+      list.querySelectorAll("[data-module-step]").forEach(button => button.addEventListener("click", () => navigate(button.dataset.moduleStep)));
+    }
+
+    function openPrompt(prompt) {
+      activePrompt = prompt;
+      promptChoice = null;
+      promptChecked = false;
+      renderPrompt();
+    }
+
+    function revealTimedPrompt(prompt) {
+      const show = () => {
+        if (promptOpen && !activePrompt && isVideoStep(currentStep)) openPrompt(prompt);
+      };
+      try {
+        if (document.fullscreenElement && document.exitFullscreen) {
+          const exit = document.exitFullscreen();
+          if (exit && typeof exit.then === "function") exit.then(show).catch(show);
+          else show();
+          return;
+        }
+      } catch (_) {}
+      show();
+    }
+
+    function renderPrompt() {
+      if (!activePrompt) { modalRoot.innerHTML = ""; return; }
+      const isPretest = activePrompt.kind === "pretest";
+      const isPosttest = activePrompt.kind === "posttest";
+      const promptLabel = isPretest ? "Pre-assessment · Not graded" : isPosttest ? "Graded post-test · 80% required" : "Knowledge checkpoint";
+      modalRoot.innerHTML = `<div class="modal" role="dialog" aria-modal="true" aria-labelledby="prompt-title"><section class="modal-card"><span class="kicker">${promptLabel}</span><h2 id="prompt-title">${escapeHtml(activePrompt.title)}</h2><p>${escapeHtml(activePrompt.question)}</p><div class="modal-options">${activePrompt.options.map((option, index) => `<label class="option ${promptChoice === index ? "selected" : ""} ${!isPretest && promptChecked && index === activePrompt.answer ? "answer" : ""}"><input type="radio" name="timed-prompt" value="${index}" ${promptChoice === index ? "checked" : ""} ${promptChecked ? "disabled" : ""}><span>${escapeHtml(option)}</span></label>`).join("")}</div>${!isPretest && promptChecked ? `<div class="modal-feedback"><strong>${promptChoice === activePrompt.answer ? "Correct." : "Review the key point."}</strong> ${escapeHtml(activePrompt.rationale)}</div>` : ""}<div class="modal-actions">${isPretest ? `<button class="primary" id="prompt-action" ${promptChoice === null ? "disabled" : ""}>Save response and continue <span>→</span></button>` : !promptChecked ? `<button class="primary" id="prompt-action" ${promptChoice === null ? "disabled" : ""}>Check answer</button>` : `<button class="primary" id="prompt-action">${isPosttest ? "Save answer" : "Continue presentation"} <span>→</span></button>`}</div></section></div>`;
+      modalRoot.querySelectorAll('input[name="timed-prompt"]').forEach(input => input.addEventListener("change", () => { promptChoice = Number(input.value); renderPrompt(); }));
+      document.getElementById("prompt-action").addEventListener("click", handlePromptAction);
+    }
+
+    function handlePromptAction() {
+      if (!activePrompt || promptChoice === null) return;
+      if (activePrompt.kind === "pretest") {
+        progress.pretestAnswers[activePrompt.questionId] = promptChoice;
+        progress.completedPretestQuestions = [...new Set([...progress.completedPretestQuestions, activePrompt.id])];
+        finishPrompt();
+        return;
+      }
+      if (!promptChecked) { promptChecked = true; renderPrompt(); return; }
+      if (activePrompt.kind === "posttest") {
+        progress.posttestAnswers[activePrompt.questionId] = promptChoice;
+        progress.completedPosttestQuestions = [...new Set([...progress.completedPosttestQuestions, activePrompt.id])];
+        if (progress.completedPosttestQuestions.length === posttestQuestions.length) scoreTimedPosttest();
+      } else {
+        progress.completedCheckpoints = [...new Set([...progress.completedCheckpoints, activePrompt.id])];
+      }
+      finishPrompt();
+    }
+
+    function scoreTimedPosttest() {
+      const correct = posttestQuestions.reduce((sum, question) => sum + Number(progress.posttestAnswers[question.id] === question.answer), 0);
+      const score = Math.round((correct / posttestQuestions.length) * 100);
+      progress.posttestAttempts += 1;
+      progress.posttestScore = Math.max(progress.posttestScore, score);
+      progress.posttestPassed = progress.posttestPassed || score >= 80;
+      postAnswers = { ...progress.posttestAnswers };
+      postSubmitted = true;
+      postMessage = progress.posttestPassed ? `You passed with a score of ${score}%.` : `Your score is ${score}%. A score of 80% is required.`;
+    }
+
+    function finishPrompt() {
+      const finished = activePrompt;
+      saveProgress();
+      modalRoot.innerHTML = "";
+      activePrompt = null;
+      promptChoice = null;
+      promptChecked = false;
+      promptOpen = false;
+      if (player && finished) {
+        const chapter = chapterFor();
+        const resumeAt = chapter ? finished.time - chapter.start + 1 : Number(player.currentTime || 0);
+        player.currentTime = Math.min(chapter ? chapterDuration(chapter) : resumeAt, Math.max(Number(player.currentTime || 0), resumeAt));
+        player.play().catch(() => {});
+      }
+    }
+
+    function renderPosttest() {
+      pageRoot.innerHTML = `<section class="page"><div class="eyebrow">Step 6 · Presentation complete · Graded assignment · 80% required</div><h1>Post-test results</h1><p class="lede compact">These are the four questions answered during the closing portion of the faculty presentation. Review the feedback below. If needed, you may retake the assessment without replaying the entire recording.</p><form class="assessment" id="posttest-form">${posttestQuestions.map((question, index) => {
+        const selected = postAnswers[question.id];
+        const correct = selected === question.answer;
+        return `<fieldset class="question ${postSubmitted ? (correct ? "correct" : "incorrect") : ""}"><legend><span>${index + 1}</span>${escapeHtml(question.prompt)}</legend><div class="options">${question.options.map((option, optionIndex) => `<label class="option ${selected === optionIndex ? "selected" : ""} ${postSubmitted && optionIndex === question.answer ? "answer" : ""}"><input type="radio" name="${question.id}" value="${optionIndex}" ${selected === optionIndex ? "checked" : ""} ${postSubmitted ? "disabled" : ""}><span>${escapeHtml(option)}</span></label>`).join("")}</div>${postSubmitted ? `<div class="rationale"><strong>${correct ? "Correct." : "Review:"}</strong> ${escapeHtml(question.rationale)}</div>` : ""}</fieldset>`;
+      }).join("")}${postMessage ? `<div class="message ${progress.posttestPassed ? "success" : "warning"}" role="alert">${escapeHtml(postMessage)}</div>` : ""}<div class="actions split"><button type="button" class="secondary" id="post-previous">← Previous item</button>${postSubmitted && !progress.posttestPassed ? `<button type="button" class="primary" id="post-retry">Retake post-test <span>↻</span></button>` : progress.posttestPassed ? `<button type="button" class="primary" id="post-continue">Continue to evaluation <span>→</span></button>` : `<button type="submit" class="primary">Submit post-test <span>→</span></button>`}</div></form></section>`;
+      document.getElementById("post-previous").addEventListener("click", () => navigate("application"));
+      document.getElementById("posttest-form").addEventListener("change", event => {
+        if (event.target.matches('input[type="radio"]')) postAnswers[event.target.name] = Number(event.target.value);
+      });
+      document.getElementById("posttest-form").addEventListener("submit", event => {
+        event.preventDefault();
+        if (Object.keys(postAnswers).length < posttestQuestions.length) { postMessage = "Please answer all four questions before submitting the post-test."; renderPosttest(); return; }
+        const correct = posttestQuestions.reduce((sum, question) => sum + Number(postAnswers[question.id] === question.answer), 0);
+        const score = Math.round((correct / posttestQuestions.length) * 100);
+        const passed = score >= 80;
+        postSubmitted = true;
+        progress.posttestAttempts += 1;
+        progress.posttestScore = Math.max(progress.posttestScore, score);
+        progress.posttestPassed = progress.posttestPassed || passed;
+        progress.posttestAnswers = { ...postAnswers };
+        progress.completedPosttestQuestions = posttestPrompts.map(item => item.id);
+        postMessage = passed ? `You passed with a score of ${score}%.` : `Your score is ${score}%. A score of 80% is required.`;
+        saveProgress();
+        renderPosttest();
+      });
+      const retry = document.getElementById("post-retry");
+      if (retry) retry.addEventListener("click", () => { postAnswers = {}; postSubmitted = false; postMessage = ""; renderPosttest(); contentRoot.scrollTo({ top: 0, behavior: "smooth" }); });
+      const continueButton = document.getElementById("post-continue");
+      if (continueButton) continueButton.addEventListener("click", () => navigate("evaluation"));
+    }
+
+    function ratingBlock(name, label) {
+      return `<fieldset class="form-group"><legend>${label} <span aria-hidden="true">*</span></legend><div class="rating">${[1,2,3,4,5].map(value => `<label><input type="radio" name="${name}" value="${value}" required><strong>${value}</strong></label>`).join("")}</div></fieldset>`;
+    }
+
+    function renderEvaluation() {
+      pageRoot.innerHTML = `<section class="page"><div class="breadcrumb">Step 6 <span>›</span> Demonstrate learning</div><div class="eyebrow">Survey · approximately 5 minutes</div><h1>Activity evaluation</h1><p class="lede compact">Your feedback supports quality improvement and is required to complete the activity.</p><form class="evaluation" id="evaluation-form">${ratingBlock("relevance", "The content was relevant to my professional practice.")}${ratingBlock("confidence", "The activity increased my confidence in recognizing and addressing TD.")}${ratingBlock("intent", "I intend to apply at least one strategy from this activity.")}<div class="form-group"><label for="bias">Was the activity fair-balanced and free of commercial bias? *</label><select id="bias" name="bias" required><option value="">Select one</option><option>Yes</option><option>No</option><option>Not sure</option></select></div><div class="form-group"><label for="change">What, if anything, will you change in practice? (optional)</label><textarea id="change" name="change" rows="4" placeholder="Describe one planned change or remaining barrier."></textarea></div><label class="attestation"><input type="checkbox" name="attestation" required><span><strong>Completion attestation</strong><br>I attest that I personally completed the required educational activity and assessment.</span></label><div class="actions split"><button type="button" class="secondary" id="evaluation-previous">← Previous item</button><button type="submit" class="primary">Submit evaluation <span>→</span></button></div></form></section>`;
+      document.getElementById("evaluation-previous").addEventListener("click", () => navigate("posttest"));
+      document.getElementById("evaluation-form").addEventListener("submit", event => {
+        event.preventDefault();
+        if (!event.currentTarget.checkValidity()) { event.currentTarget.reportValidity(); return; }
+        progress.evaluationComplete = true;
+        progress.complete = true;
+        saveProgress();
+        sendCompletion();
+        navigate("complete");
+      });
+    }
+
+    function sendCompletion() {
+      if (completionSent) return;
+      completionSent = true;
+      const detail = { type: "RWCE_MODULE_COMPLETE", moduleId: "td-enduring-2026", title: COURSE_TITLE, credit: 1, score: progress.posttestScore, completedAt: new Date().toISOString() };
+      window.dispatchEvent(new CustomEvent("rwce:module-complete", { detail }));
+      if (window.parent !== window) window.parent.postMessage(detail, "*");
+    }
+
+    function renderComplete() {
+      sendCompletion();
+      pageRoot.innerHTML = `<section class="page completion"><div class="seal" aria-hidden="true">✓</div><div class="eyebrow">Step 7 · Course complete</div><h1>Congratulations—you completed the course.</h1><p class="lede compact">Your completion status has been saved on this device and sent to the parent learning portal when the activity is embedded.</p><div class="summary"><div><span>Course</span><strong>${COURSE_TITLE}</strong></div><div><span>Credit</span><strong>1.0 CE</strong></div><div><span>Post-test</span><strong>${progress.posttestScore}%</strong></div><div><span>Status</span><strong style="color:var(--success)">Complete</strong></div></div><div class="actions" style="justify-content:center"><button class="secondary" id="print-summary">Print completion summary</button><button class="text-button" id="reset-course">Reset course progress</button></div></section>`;
+      document.getElementById("print-summary").addEventListener("click", () => window.print());
+      document.getElementById("reset-course").addEventListener("click", () => {
+        if (!window.confirm("Reset all saved progress for this activity?")) return;
+        localStorage.removeItem(STORAGE_KEY);
+        progress = { ...defaults, videoDuration: TOTAL_VIDEO_DURATION, segmentPositions: {}, pretestAnswers: {}, completedPretestQuestions: [], completedCheckpoints: [], completedSegments: [], posttestAnswers: {}, completedPosttestQuestions: [] };
+        postAnswers = {};
+        postSubmitted = false;
+        postMessage = "";
+        completionSent = false;
+        currentStep = "overview";
+        render();
+      });
+    }
+
+    render();
+  })();
+  </script>
+</body>
+</html>
